@@ -1,6 +1,6 @@
 {
   "name"              : "fboseca/files_manager",
-  "description"       : "Manager for files of models",
+  "description"       : "Manager for files",
   "type"              : "package",
   "license"           : "mit",
   "authors"           : [
@@ -11,8 +11,6 @@
   ],
   "minimum-stability" : "dev",
   "require"           : {
-    "php"               : ">=5.6.4",
-    "laravel/framework" : ">=5.3.*"
   },
   "extra"             : {
     "laravel" : {
