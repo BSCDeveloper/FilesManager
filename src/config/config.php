@@ -1,23 +1,32 @@
 <?php
 return [
-	"enviroment"     => "",//public or private
-	"folder_default" => "files", //folder to save files
-	"platform"       => "",//local, s3, other driver that you has
+	"table_files"                  => "files_manager",
+	"folder_default"               => "files",
+	"disk_default"                 => "public",
+	"disk_temp"                    => "temp",
+	"symbolic_link_private"        => "file.manager.private",
+	"url_link_private_files"       => "private/file/",
+	"symbolic_link_download_files" => "download.file ",
+	"extension_default"            => "txt",
 	//type of file for bbdd
-	"mime_types"     => [
-		"image/bmp"                => "img",
-		"image/gif"                => "img",
-		"image/jpeg"               => "img",
-		"image/png"                => "img",
-		"image/tiff"               => "img",
-		"text/plain"               => "txt",
-		"application/pdf"          => "pdf",
-		"application/zip"          => "zip",
-		"application/msexcel"      => "excel",
-		"application/vnd.ms-excel" => "excel",
-		"application/msword"       => "docx",
-		"*"                        => "file",
-
+	"extensions"                   => [
+		"bmp"  => "img",
+		"gif"  => "img",
+		"jpeg" => "img",
+		"jpg"  => "img",
+		"png"  => "img",
+		"tiff" => "img",
+		"txt"  => "txt",
+		"pdf"  => "pdf",
+		"zip"  => "zip",
+		"xls"  => "excel",
+		"xlsx" => "excel",
+		"doc"  => "word",
+		"docx" => "word",
+		"js"   => "json",
+		"json" => "json",
+		"html" => "html",
+		"*"    => "file",
 		/*"x-world/x-3dmf"                => "qd3",
 		"video/x-msvideo"               => "avi",
 		"application/postscript"        => "ps",

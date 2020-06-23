@@ -1,29 +1,29 @@
 {
-  "name"              : "bscdeveloper/filesmanager",
+  "name"              : "fboseca/files_manager",
   "description"       : "Manager for files of models",
   "type"              : "package",
   "license"           : "mit",
   "authors"           : [
     {
-      "name"  : "BSCDeveloper",
+      "name"  : "Fboseca",
       "email" : "f.borjasercas@gmail.com"
     }
   ],
   "minimum-stability" : "dev",
   "require"           : {
     "php"               : ">=5.6.4",
-    "laravel/framework" : "5.3.*"
+    "laravel/framework" : ">=5.3.*"
   },
   "extra"             : {
     "laravel" : {
       "providers" : [
-        "bscdeveloper\\filesmanager\\FilesManagerServiceProvider"
+        "Fboseca\\Filesmanager\\FilesManagerServiceProvider"
       ]
     }
   },
   "autoload"          : {
     "psr-4" : {
-      "Bscdeveloper\\Filesmanager\\" : "src/"
+      "Fboseca\\Filesmanager\\" : "src"
     }
   }
 }
