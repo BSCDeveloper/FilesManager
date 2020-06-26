@@ -11,6 +11,8 @@ class ZipFileManager {
 
 	private $files;
 	private $model;
+	private $folder;
+	private $disk;
 	private $name;
 	private $routeTemp;
 
@@ -52,6 +54,12 @@ class ZipFileManager {
 	public function save($name = "", $group = '', $description = '') {
 		if ($this->isZipeable()) {
 			$name = $name ?: $this->name;
+			if ($this->folder) {
+				$this->model->folder($this->folder);
+			}
+			if ($this->disk) {
+				$this->model->disk($this->disk);
+			}
 			return $this->model->addFileFromSource($this->routeTemp, $group, $this->nameWitExtension($name, false), $description);
 		} else {
 			return null;
@@ -62,21 +70,41 @@ class ZipFileManager {
 		FileManager::removeTempFile($this->name);
 	}
 
+	/**
+	 * Change folder to save the file
+	 * @param $folder
+	 * @return $this
+	 */
 	public function folder($folder) {
-		$this->model->folder($folder);
+		$this->folder = $folder;
 		return $this;
 	}
 
+	/**
+	 * Change the disk to save file
+	 * @param $disk
+	 * @return $this
+	 */
 	public function disk($disk) {
-		$this->model->disk($disk);
+		$this->disk = $disk;
 		return $this;
 	}
 
+	/**
+	 * Change the model to attach this zip file
+	 * @param $model
+	 * @return $this
+	 */
 	public function model($model) {
 		$this->model = $model;
 		return $this;
 	}
 
+	/**
+	 * To add files
+	 * @param Collection $files
+	 * @return $this
+	 */
 	public function addFiles(Collection $files) {
 		if ($files->count()) {
 			$this->files = $this->files->merge($files);
@@ -84,6 +112,13 @@ class ZipFileManager {
 			$this->init();
 		}
 		return $this;
+	}
+
+	/**
+	 * @return Collection
+	 */
+	public function getFiles(): Collection {
+		return $this->files;
 	}
 
 	private function nameWitExtension($name, $extension = true): string {

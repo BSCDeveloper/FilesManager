@@ -1,12 +1,46 @@
 <?php
 return [
+	/*
+	|--------------------------------------------------------------------------
+	| name of table for save files
+	|--------------------------------------------------------------------------
+	|
+	*/
+
 	"table_files"                  => "files_manager",
+
+	/*
+	|--------------------------------------------------------------------------
+	| General
+	|--------------------------------------------------------------------------
+	| General settings to know where to save the files
+	*/
+
 	"folder_default"               => "files",
 	"disk_default"                 => "public",
-	"disk_temp"                    => "temp",
+	"disk_temp"                    => "temp", //name of disk to use like temporal disk
+
+	/*
+	|--------------------------------------------------------------------------
+	| public methods
+	|--------------------------------------------------------------------------
+	|
+	*/
 	"symbolic_link_private"        => "file.manager.private",
 	"url_link_private_files"       => "private/file/",
-	"symbolic_link_download_files" => "download.file ",
+	/*
+	|--------------------------------------------------------------------------
+	| public methods
+	|--------------------------------------------------------------------------
+	|
+	*/
+	"symbolic_link_download_files" => "download.file",
+	/*
+	|--------------------------------------------------------------------------
+	| public methods
+	|--------------------------------------------------------------------------
+	|
+	*/
 	"extension_default"            => "txt",
 	//type of file for bbdd
 	"extensions"                   => [

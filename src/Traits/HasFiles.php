@@ -33,10 +33,21 @@ trait HasFiles {
 	|--------------------------------------------------------------------------
 	|
 	*/
-
+	/**
+	 * For overwrite, this funcion is used for change the folder and disk
+	 * defaults.
+	 */
 	public function fileCustomVariables() {
 	}
 
+	/**
+	 * Attach file to model
+	 * @param UploadedFile $file
+	 * @param string       $group
+	 * @param string       $name
+	 * @param string       $description
+	 * @return FileManager|UploadedFile
+	 */
 	public function addFile(UploadedFile $file, $group = '', $name = "", $description = '') {
 		//init variables
 		$this->initVariables();
@@ -53,11 +64,28 @@ trait HasFiles {
 		return $file;
 	}
 
+	/**
+	 * Attach a file from a path
+	 * @param        $source path of a file
+	 * @param string $group
+	 * @param string $name
+	 * @param string $description
+	 * @return FileManager|UploadedFile
+	 */
 	public function addFileFromSource($source, $group = '', $name = "", $description = '') {
 		$file = new UploadedFile($source, basename($source));
 		return $this->addFile($file, $group, $name, $description);
 	}
 
+	/**
+	 * Attach a file by passing it content
+	 * @param        $content content from file
+	 * @param        $extension
+	 * @param string $group
+	 * @param string $name
+	 * @param string $description
+	 * @return FileManager|UploadedFile
+	 */
 	public function addFileFromContent($content, $extension, $group = '', $name = "", $description = '') {
 		$nameFileTemp = FileManager::generateName() . ".$extension";
 		$source = FileManager::createTempFile($nameFileTemp, $content);
@@ -66,6 +94,13 @@ trait HasFiles {
 		return $file;
 	}
 
+	/**
+	 * Attach a file and save it like logo of model. Delete logo before if exists
+	 * @param UploadedFile $file
+	 * @param string       $name
+	 * @param string       $description
+	 * @return FileManager|UploadedFile
+	 */
 	public function setLogo(UploadedFile $file, $name = "", $description = '') {
 		if ($this->logo) {
 			$this->logo->delete();
@@ -76,28 +111,52 @@ trait HasFiles {
 
 	//endregion
 
-	//getters
+	//region getters
+	/**
+	 * Check if a file exists on the folder and disk of model
+	 * @param $name
+	 * @return bool
+	 */
 	public function exists($name): bool {
 		return FileManager::checkIfFileExist($this->FOLDER, $this->DISK, $name);
 	}
 
+	/**
+	 * Return the actual folder
+	 * @return string
+	 */
 	public function getFolder() {
 		$this->initCustomVariables();
 		return $this->FOLDER;
 	}
 
+	/**
+	 * Return the actual disk
+	 * @return string
+	 */
 	public function getDisk() {
 		$this->initCustomVariables();
 		return $this->DISK;
 	}
 
-	//setters
+	//region setters
+
+	/**
+	 * Change the disk of model
+	 * @param $disk
+	 * @return $this
+	 */
 	public function disk($disk) {
 		$this->initCustomVariables();
 		$this->FILE_DISK_DEFAULT = $disk;
 		return $this;
 	}
 
+	/**
+	 * Change the folder of model
+	 * @param $folder
+	 * @return $this
+	 */
 	public function folder($folder) {
 		$this->initCustomVariables();
 		$this->FILE_FOLDER_DEFAULT = $folder;
@@ -105,12 +164,6 @@ trait HasFiles {
 	}
 
 	//region private
-	/*
-	|--------------------------------------------------------------------------
-	| private methods
-	|--------------------------------------------------------------------------
-	|
-	*/
 
 	private function secureFolder($url): string {
 		return trim($url, '/');
@@ -136,7 +189,8 @@ trait HasFiles {
 
 	//endregion
 
-	/** Relationship **/
+	//region relathionship
+
 	/**
 	 * Get all files of model
 	 * @return MorphMany
@@ -145,11 +199,20 @@ trait HasFiles {
 		return $this->morphMany(FileManager::class, 'filesable');
 	}
 
+	/**
+	 * Get all images of model
+	 * @return mixed
+	 */
 	public function images() {
 		return $this->morphMany(ImageFile::class, 'filesable');
 	}
 
+	/**
+	 * To get logo of model
+	 * @return mixed
+	 */
 	public function getLogoAttribute() {
 		return $this->files()->ofGroup('logo')->first();
 	}
+	//endregion
 }

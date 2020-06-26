@@ -12,6 +12,7 @@ class FileManager extends Model {
 	const ENVIRONMENT_PUBLIC = "public";
 	const ENVIRONMENT_PRIVATE = "private";
 	const PLATFORM_S3 = "s3";
+	const PLATFORM_LOCAL = "local";
 	const LIMIT_MAX_NAME = 150;
 
 	public function __construct(array $attributes = []) {
@@ -31,12 +32,18 @@ class FileManager extends Model {
 
 
 	//public
+
+	/**
+	 * For delete a file
+	 * @return bool|null
+	 * @throws \Exception
+	 */
 	public function delete() {
 		$this->removeFileFromPlatform();
 		return parent::delete();
 	}
 
-	public function copy($folder, $disk, $model = null) {
+	public function copy($folder = null, $disk = null, $model = null) {
 		$model = $model ?: $this->filesable;
 		$name = $this->file_name;
 		$group = $this->group;
@@ -91,8 +98,11 @@ class FileManager extends Model {
 					return Storage::disk($this->disk)->temporaryUrl(
 						$this->url, now()->addMinutes(5));
 				break;
-				default:
+				case self::PLATFORM_LOCAL:
 					return Storage::disk($this->disk)->url(self::encryptId($this->id));
+				break;
+				default:
+					return $this->src;
 				break;
 			}
 		}
@@ -114,6 +124,10 @@ class FileManager extends Model {
 
 	//privates
 
+	/**
+	 * Remove file where is hosted
+	 * @return bool
+	 */
 	private function removeFileFromPlatform() {
 		return Storage::disk($this->disk)->delete($this->url);
 	}

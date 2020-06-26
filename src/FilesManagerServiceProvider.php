@@ -30,10 +30,5 @@ class FilesManagerServiceProvider extends ServiceProvider {
 
 		$this->loadMigrationsFrom(__DIR__ . '/migrations');
 		$this->loadRoutesFrom(__DIR__ . '/routes.php');
-		/*
-		$this->loadViewsFrom(__DIR__.'/views', 'todolist');
-		$this->publishes([
-			__DIR__.'/views' => resource_path('views/borsercen/todolist'),
-		]);*/
 	}
 }
