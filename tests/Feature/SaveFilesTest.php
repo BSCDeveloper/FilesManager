@@ -4,11 +4,11 @@ namespace Fboseca\Filesmanager\Tests;
 
 
 class SaveFilesTest extends TestCase {
-	public $user;
+
 
 	public function setUp(): void {
 		parent::setUp();
-		$this->user = User::find(1);
+
 	}
 
 	public function testSaveFile() {
@@ -16,7 +16,36 @@ class SaveFilesTest extends TestCase {
 		//with parameters
 	}
 
-	public function test() {
+	public function testSaveWithoutExtension() {
+
+	}
+
+	public function testSaveMultipleExtensions() {
+
+	}
+
+	public function testSaveLogo() {
+		//save logo
+
+		//get logo
+	}
+
+	public function testFileSaveOnNewFolder() {
+		//change user default folder
+
+		//change folder
+
+	}
+
+	public function testDeleteFile() {
+
+	}
+
+	public function testCopyFile() {
+
+	}
+
+	public function testDownloadFile() {
 
 	}
 }
