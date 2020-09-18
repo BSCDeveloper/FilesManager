@@ -23,5 +23,20 @@
     "psr-4" : {
       "Fboseca\\Filesmanager\\" : "src"
     }
+  },
+  "autoload-dev"      : {
+    "psr-4" : {
+      "Fboseca\\Filesmanager\\Tests\\" : "tests"
+    }
+  },
+  "require-dev"       : {
+    "orchestra/testbench" : "5.x-dev",
+    "phpunit/phpunit"     : "8.5.x-dev",
+    "orchestra/canvas"    : "5.x-dev"
+  },
+  "scripts"           : {
+    "test"    : "php vendor/phpunit/phpunit/phpunit",
+    "testone" : "php vendor/phpunit/phpunit/phpunit --filter",
+    "artisan" : "php vendor/orchestra/canvas/canvas"
   }
 }

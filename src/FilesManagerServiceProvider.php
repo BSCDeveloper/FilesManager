@@ -2,6 +2,7 @@
 
 namespace Fboseca\Filesmanager;
 
+use Fboseca\Filesmanager\Console\InstallProviderConsole;
 use Fboseca\Filesmanager\Managers\ZipFileManager;
 use Illuminate\Support\Collection;
 use Illuminate\Support\ServiceProvider;
@@ -24,11 +25,15 @@ class FilesManagerServiceProvider extends ServiceProvider {
 		Collection::macro('toZipFile', function () {
 			return new ZipFileManager($this);
 		});
+
 		$this->publishes([
-			__DIR__ . '/config/config.php' => config_path('filemanager.php'),
+			__DIR__ . '/../config/filemanager.php' => config_path('filemanager.php'),
 		], 'config');
 
-		$this->loadMigrationsFrom(__DIR__ . '/migrations');
+		$this->publishes([
+			__DIR__ . '/../database/migrations/create_files_table.php.stub' => database_path('migrations/' . date('Y_m_d_His', time()) . '_create_files_table.php'),
+		], 'migrations');
+
 		$this->loadRoutesFrom(__DIR__ . '/routes.php');
 	}
 }
