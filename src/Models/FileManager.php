@@ -134,19 +134,19 @@ class FileManager extends Model {
 
 	//scopes
 
-	public function scopeOfGroup($query, $group) {
+	public function scopeWithGroup($query, $group) {
 		return $query->where('group', $group);
 	}
 
-	public function scopeOfNotGroup($query, $group) {
+	public function scopeWithNotGroup($query, $group) {
 		return $query->where('group', '<>', $group);
 	}
 
-	public function scopeOfType($query, $group) {
+	public function scopeWithType($query, $group) {
 		return $query->where('type', $group);
 	}
 
-	public function scopeOfNotType($query, $group) {
+	public function scopeWithNotType($query, $group) {
 		return $query->where('type', '<>', $group);
 	}
 
