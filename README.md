@@ -44,7 +44,7 @@ composer test
 
 ## Installation  
   
-This requires Laravel 5.8 or highter and Php 5.6 or highter.  
+This requires Laravel 5.8 or highter and Php 7.1.3 or highter.  
   
 1) In order to install File manager, just run in terminal:   
   
