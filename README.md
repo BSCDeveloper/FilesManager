@@ -1,5 +1,5 @@
-[![Packagist Version](https://img.shields.io/packagist/v/fboseca/files_manager)](https://packagist.org/packages/fboseca/files_manager)  ![Packagist License](https://img.shields.io/packagist/l/fboseca/files_manager) [![Laravel](https://img.shields.io/badge/Laravel-5.8^-orange.svg)](https://laravel.com/docs/5.8)
-# What It Does  
+[![Packagist Version](https://img.shields.io/packagist/v/fboseca/files_manager)](https://packagist.org/packages/fboseca/files_manager)  ![Packagist License](https://img.shields.io/packagist/l/fboseca/files_manager) [![Laravel](https://img.shields.io/badge/Laravel-^5.8-orange.svg)](https://laravel.com/docs/5.8)
+# What It Does    
  This plugin organizes all the information in the database and saves the file on the platform that we have indicated ussing the disks of Laravel,  so you can easily save your files on the local server, amazon s3, ftp etc.   
 FilesManager organizes and manages all the information in the database and the control and security of access to the saved files.   
 Each file is associated with a model, which allows greater control and management of each file.  
