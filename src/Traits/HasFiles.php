@@ -24,6 +24,7 @@ trait HasFiles {
 	private $DISK = '';
 	private $CONFIG_DISK = '';
 	private $customVariables = false;
+	private $GROUP_LOGO = 'logo';
 	//endregion
 
 	//region public
@@ -37,6 +38,7 @@ trait HasFiles {
 	 * For overwrite, this funcion is used for change the folder and disk
 	 * defaults.
 	 */
+
 	public function fileCustomVariables() {
 	}
 
@@ -105,7 +107,7 @@ trait HasFiles {
 		if ($this->logo) {
 			$this->logo->delete();
 		}
-		$group = 'logo';
+		$group = $this->GROUP_LOGO;
 		return $this->addFile($file, $group, $name, $description);
 	}
 
@@ -212,7 +214,7 @@ trait HasFiles {
 	 * @return mixed
 	 */
 	public function getLogoAttribute() {
-		return $this->files()->ofGroup('logo')->first();
+		return $this->files()->withGroup($this->GROUP_LOGO)->first();
 	}
 	//endregion
 }

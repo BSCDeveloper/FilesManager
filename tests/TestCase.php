@@ -3,24 +3,90 @@
 namespace Fboseca\Filesmanager\Tests;
 
 
+use Carbon\Carbon;
 use Fboseca\Filesmanager\FilesManagerServiceProvider;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 class TestCase extends \Orchestra\Testbench\TestCase {
-	public $user;
+	use RefreshDatabase;
+
+	public $configFile = 'filemanager';
+	public $user1;
 	public $user2;
 
-	/**
-	 *
-	 */
+
 	public function setUp(): void {
 		parent::setUp();
-		$this->user = User::find(1);
-		$this->user2 = User::find(2);
+		$this->UpConfig();
+		$this->UpStorages();
+		$this->loadLaravelMigrations();
+		$this->getUsers();
 	}
 
 	protected function getPackageProviders($app) {
 		return [
 			FilesManagerServiceProvider::class,
 		];
+	}
+
+	protected function getEnvironmentSetUp($app) {
+		parent::getEnvironmentSetUp($app);
+		// import the CreatePostsTable class from the migration
+		include_once __DIR__ . '/../database/migrations/create_files_table.php.stub';
+
+		// run the up() method of that migration class
+		(new \CreateFilesTable())->up();
+	}
+
+	private function UpConfig() {
+		//charge the config file
+		if (!File::exists(config_path($this->configFile . ".php"))) {
+			Artisan::call('vendor:publish', [
+				'--provider' => "Fboseca\Filesmanager\FilesManagerServiceProvider",
+				"--tag"      => "config"
+			]);
+		}
+		Artisan::call('storage:link');
+	}
+
+	private function getUsers() {
+		User::create([
+			"name"              => 'Borja',
+			"email"             => 'bor@g.es',
+			"password"          => '123',
+			"created_at"        => Carbon::now(),
+			"updated_at"        => Carbon::now(),
+			"email_verified_at" => Carbon::now(),
+		]);
+		User::create([
+			"name"              => 'Pepe',
+			"email"             => 'pepe@g.es',
+			"password"          => '123',
+			"created_at"        => Carbon::now(),
+			"updated_at"        => Carbon::now(),
+			"email_verified_at" => Carbon::now(),
+		]);
+		$this->user1 = User::find(1);
+		$this->user2 = User::find(2);
+	}
+
+	private function UpStorages() {
+		Storage::fake('temp', [
+			'driver'     => 'local',
+			'visibility' => 'private'
+		]);
+		Storage::fake('public', [
+			'driver'     => 'local',
+			'url'        => env('APP_URL') . '/storage/public',
+			'visibility' => 'public'
+		]);
+		Storage::fake('private', [
+			'driver'     => 'local',
+			'url'        => env('APP_URL') . config('filemanager.url_link_private_files'),
+			'visibility' => 'private'
+		]);
 	}
 }

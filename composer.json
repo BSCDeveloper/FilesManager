@@ -1,6 +1,6 @@
 {
   "name"         : "fboseca/files_manager",
-  "description"  : "Manager for files",
+  "description"  : "Associate Laravel`s models with files uploaded",
   "type"         : "package",
   "license"      : "mit",
   "authors"      : [
@@ -10,7 +10,6 @@
     }
   ],
   "require"      : {
-    "php" : ">=7.1.3"
   },
   "extra"        : {
     "laravel" : {

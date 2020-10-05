@@ -26,8 +26,7 @@ return [
 	|--------------------------------------------------------------------------
 	|
 	*/
-	"symbolic_link_private"        => "file.manager.private",
-	"url_link_private_files"       => "private/file/",
+	"url_link_private_files"       => "/private/file/",
 	/*
 	|--------------------------------------------------------------------------
 	| public methods

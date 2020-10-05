@@ -111,6 +111,8 @@ class FileManager extends Model {
 	public function getDownloadSrcAttribute() {
 		if ($this->public) {
 			return $this->getForceDownloadSrcAttribute();
+		} else {
+			return '';
 		}
 	}
 

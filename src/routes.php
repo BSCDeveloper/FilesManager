@@ -2,15 +2,6 @@
 
 use Fboseca\Filesmanager\Models\FileManager;
 
-
-/*Route::get('custom/files/{has}', function ($has) {
-	return \Redirect::route('file.manager.private', $has);
-});
-
-Route::get('custom/download/{has}', function ($has) {
-	return \Redirect::route('file.manager.private', $has);
-});*/
-
 /**
  * Route for get private files
  */
@@ -32,3 +23,12 @@ Route::get('download/file/{has}', function ($has) {
 	}
 	abort(404);
 })->name('download.file');
+
+
+Route::get('/', function () {
+	return 'holi';
+});
+
+Route::get('/storage/{disk}/{route}', function ($disk, $route) {
+	return response()->file(\Storage::disk($disk)->path($route));
+})->where([ 'route' => '[\w\./]*' ]);

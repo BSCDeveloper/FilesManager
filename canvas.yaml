@@ -1,0 +1,6 @@
+preset: laravel
+
+namespace: App
+
+model:
+  namespace: App
