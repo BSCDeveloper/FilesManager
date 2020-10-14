@@ -18,10 +18,7 @@ class SaveFilesTest extends TestCase {
 
 		//without parameters
 		$fileSaved = $this->user1->addFile($file);
-
-		//file exists
 		Storage::disk($fileSaved->disk)->assertExists($fileSaved->url);
-		//file parameters are correct
 		$this->assertSame('files', $fileSaved->folder);
 		$this->assertSame('img', config($this->configFile . '.extensions.jpg'));
 		$this->assertSame('jpg', $fileSaved->file_extension);
@@ -34,9 +31,7 @@ class SaveFilesTest extends TestCase {
 		$file = UploadedFile::fake()->image('avatar.doc');
 		$fileSaved = $this->user1->addFile($file, "gallery", "my Name File", "A description for a file");
 
-		//file exists
 		Storage::disk($fileSaved->disk)->assertExists($fileSaved->url);
-		//file parameters are correct
 		$this->assertSame('files', $fileSaved->folder);
 		$this->assertSame('my_name_file.doc', $fileSaved->name);
 		$this->assertSame('word', config($this->configFile . '.extensions.doc'));
@@ -45,14 +40,14 @@ class SaveFilesTest extends TestCase {
 		$this->assertSame('local', $fileSaved->driver);
 		$this->assertSame('A description for a file', $fileSaved->description);
 		$this->assertSame('gallery', $fileSaved->group);
-		//without extension
 
+
+		//without file extension
 		$file = UploadedFile::fake()->create('name');
 		$fileSaved = $this->user1->addFile($file, "gallery", "my Name File", "A description for a file");
 
-		//file exists
+		//the extension of file must be txt
 		Storage::disk($fileSaved->disk)->assertExists($fileSaved->url);
-		//file parameters are correct
 		$this->assertSame('files', $fileSaved->folder);
 		$this->assertSame('my_name_file.txt', $fileSaved->name);
 		$this->assertSame('file', config($this->configFile . '.extensions.*'));
@@ -66,39 +61,37 @@ class SaveFilesTest extends TestCase {
 	public function testSaveLogo() {
 		//save logo
 		$file = UploadedFile::fake()->image('avatar.png', 100);
-		$fileSaved = $this->user1->setLogo($file, 'logo2');
-		Storage::disk($fileSaved->disk)->assertExists($fileSaved->url);
+		$this->user1->setLogo($file, 'logo2');
+		$response = $this->get($this->user1->logo->src);
+		$response->assertStatus(200);
 	}
 
-	public function testPrivateFiles() {
+	public function testSavePrivateFiles() {
 		$file = UploadedFile::fake()->image('avatar.png', 100);
-		$fileSaved = $this->user1->disk('private')->addFile($file, 'probando');
-		echo $fileSaved->disk;
-		echo $fileSaved->driver;
-		$this->assertSame('kljlkj', $fileSaved->forceSrc);
-		echo $fileSaved->forceSrc;
-		echo $fileSaved->src;
-		Storage::disk($fileSaved->disk)->assertExists($fileSaved->url);
+		$file2 = UploadedFile::fake()->create('document.pdf');
+		$this->user1->disk('private')->addFile($file, 'probando', 'prueba');
+		$this->user1->disk('private')->addFile($file2);
+		foreach ($this->user1->files as $file) {
+			$response = $this->get($file->forceSrc);
+			$response->assertStatus(200);
+			$this->assertStringContainsString('private/file', $file->forceSrc);
+		}
 	}
 
 	public function testSaveOnNewFolder() {
+		$file2 = UploadedFile::fake()->create('document.pdf');
 		//change folder
+		$fileSaved = $this->user1->folder('testing/files')->addFile($file2);
+
+		Storage::disk($fileSaved->disk)->assertExists($fileSaved->url);
+		$this->assertSame('testing/files', $fileSaved->folder);
+	}
+
+	public function testSaveFileOnFtp() {
 
 	}
 
-	public function testDeleteFile() {
-
-	}
-
-	public function testCopyFile() {
-
-	}
-
-	public function testDownloadFile() {
-
-	}
-
-	public function testSaveFtp() {
+	public function testSaveFilesWithSameName() {
 
 	}
 }

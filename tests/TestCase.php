@@ -20,8 +20,6 @@ class TestCase extends \Orchestra\Testbench\TestCase {
 
 	public function setUp(): void {
 		parent::setUp();
-		$this->UpConfig();
-		$this->UpStorages();
 		$this->loadLaravelMigrations();
 		$this->getUsers();
 	}
@@ -34,14 +32,11 @@ class TestCase extends \Orchestra\Testbench\TestCase {
 
 	protected function getEnvironmentSetUp($app) {
 		parent::getEnvironmentSetUp($app);
-		// import the CreatePostsTable class from the migration
-		include_once __DIR__ . '/../database/migrations/create_files_table.php.stub';
-
-		// run the up() method of that migration class
-		(new \CreateFilesTable())->up();
+		$this->UpStorages();
+		$this->UpConfig($app);
 	}
 
-	private function UpConfig() {
+	private function UpConfig($app) {
 		//charge the config file
 		if (!File::exists(config_path($this->configFile . ".php"))) {
 			Artisan::call('vendor:publish', [
@@ -49,7 +44,23 @@ class TestCase extends \Orchestra\Testbench\TestCase {
 				"--tag"      => "config"
 			]);
 		}
-		Artisan::call('storage:link');
+
+		//simulate storage link laravel
+		$app['router']->get('/storage/{disk}/{route}', function ($disk, $route) use ($app) {
+			if (\Storage::disk($disk)->exists($route)) {
+				return \Storage::disk($disk)->get($route);
+			}
+			abort(401);
+		})->where([ 'route' => '[\w\./]*' ]);
+
+		//adds filesystems config
+		$app['config']->set('filesystems.disks.private', [ "driver" => 'local' ]);
+
+		// import the CreatePostsTable class from the migration
+		include_once __DIR__ . '/../database/migrations/create_files_table.php.stub';
+
+		// run the up() method of that migration class
+		(new \CreateFilesTable())->up();
 	}
 
 	private function getUsers() {

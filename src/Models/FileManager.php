@@ -30,18 +30,14 @@ class FileManager extends Model {
 		'created_at', 'updated_at', 'disk', 'driver'
 	];
 
+	protected static function boot() {
+		parent::boot();
+		static::deleted(function (FileManager $fileDeleted) {
+			$fileDeleted->removeFileFromPlatform();
+		});
+	}
 
 	//public
-
-	/**
-	 * For delete a file
-	 * @return bool|null
-	 * @throws \Exception
-	 */
-	public function delete() {
-		$this->removeFileFromPlatform();
-		return parent::delete();
-	}
 
 	public function copy($folder = null, $disk = null, $model = null) {
 		$model = $model ?: $this->filesable;
@@ -130,7 +126,7 @@ class FileManager extends Model {
 	 * Remove file where is hosted
 	 * @return bool
 	 */
-	private function removeFileFromPlatform() {
+	public function removeFileFromPlatform() {
 		return Storage::disk($this->disk)->delete($this->url);
 	}
 
@@ -261,5 +257,4 @@ class FileManager extends Model {
 	static public function getDataConfigDisk($disk, $field): string {
 		return config("filesystems.disks.$disk.$field", '');
 	}
-
 }

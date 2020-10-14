@@ -23,12 +23,3 @@ Route::get('download/file/{has}', function ($has) {
 	}
 	abort(404);
 })->name('download.file');
-
-
-Route::get('/', function () {
-	return 'holi';
-});
-
-Route::get('/storage/{disk}/{route}', function ($disk, $route) {
-	return response()->file(\Storage::disk($disk)->path($route));
-})->where([ 'route' => '[\w\./]*' ]);

@@ -3,7 +3,7 @@
 namespace Fboseca\Filesmanager\Tests;
 
 
-class CollectionFilesTest extends TestCase {
+class ZipFilesTest extends TestCase {
 	public function setUp(): void {
 		parent::setUp();
 

@@ -8,13 +8,24 @@ Once installed you can do stuff like this:
 $user = User::find(1);  
   
 //attach a file with a User model  
+//thats will be save the file on bbdd and the storage app/public/files by default
 $user->addFile($request->file('file'));  
+//for download all images into a zip file
+$user1->images->toZipFile()->download('allMyImages');
+//for delete all images with date less now
+$user1->images()->where('created_ar', '<', Carbon:now())->delete();
 ```  
 And show the image files in the views:  
 ```  
 //return all images attached to User  
 @foreach ($user->images as $file )          
-<img src="{{$file->src}}"  width="100"/> @endforeach  
+    <img src="{{$file->src}}"  width="100"/> 
+@endforeach  
+
+//return all images from gallery
+@foreach ($user->images()->withGroup('gallery')->get() as $file )          
+    <img src="{{$file->src}}"  width="100"/> 
+@endforeach  
 ```  
 ## Testing  
 ```  
@@ -315,8 +326,16 @@ In case that the name exists in the disk and folder, FileManager   automatically
 $newFile = $user->addFile($request->file('file'), "gallery", "myNameFile", "A description for a file" );
  ```  
 
-Note that it is not necessary to indicate the file extension because FileManager will apply the correct extension to the file and it will check the file type according to the configuration.  
-  
+Note that it is not necessary to indicate the file extension because FileManager will apply the correct extension to the file and it will check the file type according to the configuration.
+
+For security reasons, the name of file will be modified if contains spaces or dots.
+For example, if the name is "my Name File.d.doc" will be changed for `my_name_file.doc`. 
+ 
+>  only will be valid the text until the first point 
+and the spaces will be changed for `_`. 
+
+The extension will be applied automatically, see [File extensions](#file-extensions) document.
+
 ### Get files 
 
 We can access to the files of a model in many ways. The simple form is calling the relationships **files**. Files return a collection of the FileManager class.        
@@ -328,6 +347,10 @@ If you want get only the image files you can invoke the relationships **images**
 ```  
 @foreach ($user->images as $file )        
 	<img src="{{$file->src}}"  width="100"/>      
+@endforeach 
+
+@foreach ($user->files as $file )        
+	<a href="{{$file->src}}" target="_blank">Download {{$file->name}}</a>      
 @endforeach 
 ```  
   By default only images is configured for get a type of file of the model, but if you want add more type of relationship see the [Create a relationship for a file type](#create-a-relationship-for-a-file-type).  
@@ -341,8 +364,8 @@ For images files FileManager provide a special attributes for get the src of ima
 
  - The route for public files is generated automatically by Laravel.     
  - For private local files the route by default is `private/file/`, so if    
-   you want to change this route see the documentation [Private disk    
- ](#private-disk)    
+   you want to change this route see the documentation [Private local disk    
+ ](#private-local-disk)    
  - For private files for amazon this attribute return    
    a temporary url.     
  - For privates files from other drivers like ftp or    
@@ -375,8 +398,19 @@ For images files FileManager provide a special attributes for get the src of ima
 To delete a file only need use the method **delete** of model. This method delete the file from database and host.      
 
 ```  
-$file = $user->files()->find(1); $file->delete();
+$file = $user->files()->find(1); 
+$file->delete();
 ```  
+
+So, if you want delete all images from user use method `removeFiles` from collection.
+
+```  
+$user->images->removeFiles(); //remove files from bbdd and platform
+$user->images()->delete(); //only remove files from bbdd
+```  
+
+> If you use mass delete of Eloquent only files will be deleted from database.
+
 
 #### Download 
 
