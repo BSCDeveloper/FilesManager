@@ -77,6 +77,18 @@ class FileManager extends Model {
 		}
 	}
 
+	public function append($text) {
+		Storage::disk($this->disk)->append($this->url, $text);
+		$this->size = Storage::disk($this->disk)->size($this->url);
+		$this->save();
+	}
+
+	public function prepend($text) {
+		Storage::disk($this->disk)->prepend($this->url, $text);
+		$this->size = Storage::disk($this->disk)->size($this->url);
+		$this->save();
+	}
+
 	//attributes
 
 	public function getSrcAttribute() {
@@ -92,7 +104,7 @@ class FileManager extends Model {
 			switch ($this->driver) {
 				case self::PLATFORM_S3:
 					return Storage::disk($this->disk)->temporaryUrl(
-						$this->url, now()->addMinutes(5));
+						$this->url, now()->addMinutes(60));
 				break;
 				case self::PLATFORM_LOCAL:
 					return Storage::disk($this->disk)->url(self::encryptId($this->id));
@@ -182,7 +194,7 @@ class FileManager extends Model {
 	}
 
 	static public function generateName(): string {
-		return self::secureName(md5(Str::random(32)));
+		return self::secureName(Str::random(9));
 	}
 
 	static public function getExtensionFile(UploadedFile $file): string {

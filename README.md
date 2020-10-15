@@ -38,7 +38,7 @@ composer test
   - [File extensions](#file-extensions)      
 - [Usage](#usage)      
   - [Options](#options)      
-  - [Add a file](#add-a-file)      
+  - [Adding a file](#adding-a-file)      
   - [Get files](#get-files)   
   - [Delete](#delete)   
   - [Download](#download)   
@@ -48,10 +48,9 @@ composer test
   - [Get source from Images](#get-source-from-images)  
   - [Change disk and folder](#change-disk-and-folder)      
 - [Tips](#tips)      
-   - [Method exists](#method-exists)      
-   - [Save file form source or content](#save-file-from-source-or-content)         
+  - [Method exists](#method-exists)               
   - [Scopes](#scopes)       
-  - [Create a relationship for a file type](#create-a-relationship-for-a-file-type)       
+  - [Create a relationship for a type of file](#create-a-relationship-for-a-type-of-file)       
   
 ## Installation    
 This requires Laravel 5.8 or highter and Php 7.1.3 or highter.    
@@ -278,11 +277,13 @@ class User extends Authenticatable {
       .....   
 }  
 ```  
+
+
 Now the model *User* can attach files to self.  
    
 ### Options 
 
-|| Description |     
+| Option ||     
 |--|--|    
 | name | The full name of file.     
 | group | The group to which the file belongs      
@@ -298,19 +299,43 @@ Now the model *User* can attach files to self.
 | driver | The type of Laravel´s driver which was used to save the file    
 | created_at | Date of creation of file    
 | updated_at | Date of update of file  
-  
-### Add a file 
 
-Any file that you add, ***never going to be overwrite***, it is a security system to prevent files from being replaced. Each file will be attached with a single model that imlements the *HasFiles* Trait. For attach a file to a model use the method **addFile** passing the file that you want to save.  
+
+| Attributes ||       
+|--|--|      
+| getContent | return the content of file.       
+| src | return url for access to file (public only). Is used for img tag.
+| forceSrc | return url for access to file (all visibility).  
+| downloadSrc | return the url for download the file (public only).  
+| forceDownloadSrc | return the url for download the file (all visibility).
+
+
+| Method |Parameter| |       
+|--|--|--|      
+| delete| | Remove a file from database and storage. 
+| copy| |  
+| move| | 
+| append| text | Append text to the content of file.       
+| prepend |text| Prepend text to the content of file.  
+| download |name (optional)| return download response of the file. If name isn`t given, the default name is the name of file saved on database. 
+  
+
+### Adding a file 
+
+Any file that you add, ***never going to be overwrite***, it is a security system to prevent files from being replaced. Each file will be attached with a single model that imlements the *HasFiles* Trait. For attach a file to a model use the method **addFile** passing the file that you want to save.
+  
 ```  
 $user = User::find(1);    
 $newFile = $user->addFile($request->file('file'));  
 ```  
-Automatically FileManager create a unique random name and save the file into the database and in the platform and folder indicated in the disk configuration. If we have not indicated any disk or folder to our model, it will take the default configuration of the file `config/filemanager.php`.    
+
+Automatically FileManager create a unique random name and save the file into the database and in the platform and folder indicated in the disk configuration. If we have not indicated any disk or folder to our model, it will take the default configuration of the file `config/filemanager.php`.
+    
 ```  
 "folder_default" => "files",    
 "disk_default" => "public",  
-```  
+```
+  
 In case that the name exists in the disk and folder, FileManager   automatically change de name to `name_(1).extension` to make sure the file will not be overwritten. This method accept three parameters.    
   
 |Parameter| Description | Default |    
@@ -335,6 +360,30 @@ For example, if the name is "my Name File.d.doc" will be changed for `my_name_fi
 and the spaces will be changed for `_`. 
 
 The extension will be applied automatically, see [File extensions](#file-extensions) document.
+
+#### Add files from path
+We can add files from path resource.
+ This method receives the file path as the first parameter and as optional parameters it has the same as 
+the `addFile` method: *group, name and description*
+
+```  
+$newFile = $user->addFileFromPath($pathOfFile);
+$newFile = $user->addFileFromPath($pathOfFile, "gallery", "myNameFile", "A description for a file" );
+ ```  
+
+#### Add files with content
+We can add files with content. 
+This method receives the file path as the first parameter 
+and the extension of file as second parameter.
+Too as optional parameters it has the same as 
+the `addFile` method: *group, name and description*
+
+```  
+$newFile = $user->addFileWithContent($pathOfFile, $extension);
+$newFile = $user->addFileWithContent($pathOfFile, $extension, "gallery", "myNameFile", "A description for a file" );
+$newFile = $user->addFileWithContent('hello worl', 'txt');
+$newFile = $user->addFileWithContent('hello worl', 'txt', "gallery", "myNameFile", "A description for a file" );
+ ```  
 
 ### Get files 
 
@@ -393,7 +442,8 @@ For images files FileManager provide a special attributes for get the src of ima
 	'visibility' => 'public'    
 ],  
 ```  
-#### Delete 
+
+### Delete 
 
 To delete a file only need use the method **delete** of model. This method delete the file from database and host.      
 
@@ -412,7 +462,7 @@ $user->images()->delete(); //only remove files from bbdd
 > If you use mass delete of Eloquent only files will be deleted from database.
 
 
-#### Download 
+### Download 
 
 To download a file use the method **download**. This method accept a one parameter for choose the name for download the file, by default is her name. The name no need to provide an extension.      
 
@@ -616,20 +666,9 @@ $user->getDisk(); // s3
 You can check if a file exist in the folder and disk of model with method **exists**:      
 
 ```  
-$user->exists("{name-of-file-with-extension}");
+$user->existsFile("{name-of-file-with-extension}");
 ```  
   
-### Save file from source or content 
-
-We can save a file from a specific path or a specific content from file.    
-
-```  
-$user->addFileFromSource( storage_path('app/public/temporal1.jpg') ); 
-$user->addFileFromContent( $contentFromFile, 'jpg');  
-```
-
-When we add a file by her content is necessary indicate the extension of file. Both methods have the same parameters as method [addFile](#add-a-file): *group*, *name* and *description*.    
-    
 ### Scopes   
 
 ```  
@@ -639,7 +678,7 @@ $user->images()->withType('img')->get(); //all images of type img
 $user->files()->withNotType('img')->get(); //all files that haven`t a img type 
 ```  
 
-### Create a relationship for a file type   
+### Create a relationship for a type of file   
 
 This package allow to create you own custom FileManager`s model for a kind of file, like relationship images which is already implemented in the package:     
     

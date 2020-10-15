@@ -23,7 +23,7 @@ trait HasFiles {
 	private $ENVIRONMENT = '';
 	private $DISK = '';
 	private $CONFIG_DISK = '';
-	private $customVariables = false;
+	private $customVariablesStarted = false;
 	private $GROUP_LOGO = 'logo';
 	//endregion
 
@@ -58,9 +58,9 @@ trait HasFiles {
 			$this->DISK,
 			$this->FOLDER,
 			$this->ENVIRONMENT,
-			$group,
-			$name,
-			$description
+			$group ?: '',
+			$name ?: '',
+			$description ?: ''
 		);
 		$this->files()->save($file);
 		return $file;
@@ -68,14 +68,14 @@ trait HasFiles {
 
 	/**
 	 * Attach a file from a path
-	 * @param        $source path of a file
+	 * @param        $path path of a file
 	 * @param string $group
 	 * @param string $name
 	 * @param string $description
 	 * @return FileManager|UploadedFile
 	 */
-	public function addFileFromSource($source, $group = '', $name = "", $description = '') {
-		$file = new UploadedFile($source, basename($source));
+	public function addFileFromPath($path, $group = '', $name = "", $description = '') {
+		$file = new UploadedFile($path, basename($path));
 		return $this->addFile($file, $group, $name, $description);
 	}
 
@@ -88,10 +88,10 @@ trait HasFiles {
 	 * @param string $description
 	 * @return FileManager|UploadedFile
 	 */
-	public function addFileFromContent($content, $extension, $group = '', $name = "", $description = '') {
+	public function addFileWithContent($content, $extension, $group = '', $name = "", $description = '') {
 		$nameFileTemp = FileManager::generateName() . ".$extension";
 		$source = FileManager::createTempFile($nameFileTemp, $content);
-		$file = $this->addFileFromSource($source, $group, $name, $description);
+		$file = $this->addFileFromPath($source, $group, $name, $description);
 		FileManager::removeTempFile($nameFileTemp);
 		return $file;
 	}
@@ -119,7 +119,7 @@ trait HasFiles {
 	 * @param $name
 	 * @return bool
 	 */
-	public function exists($name): bool {
+	public function existsFile($name): bool {
 		return FileManager::checkIfFileExist($this->FOLDER, $this->DISK, $name);
 	}
 
@@ -150,7 +150,7 @@ trait HasFiles {
 	 */
 	public function disk($disk) {
 		$this->initCustomVariables();
-		$this->FILE_DISK_DEFAULT = $disk;
+		$this->DISK = $disk;
 		return $this;
 	}
 
@@ -161,7 +161,7 @@ trait HasFiles {
 	 */
 	public function folder($folder) {
 		$this->initCustomVariables();
-		$this->FILE_FOLDER_DEFAULT = $folder;
+		$this->FOLDER = $folder;
 		return $this;
 	}
 
@@ -172,23 +172,22 @@ trait HasFiles {
 	}
 
 	private function initCustomVariables() {
-		if (!$this->customVariables) {
-			$this->fileCustomVariables();
-			$this->customVariables = true;
+		if (!$this->customVariablesStarted) {
+			$this->fileCustomVariables(); //overwrite default folder and disk
+
+			$this->FOLDER = $this->secureFolder($this->FILE_FOLDER_DEFAULT ?: config('filemanager.folder_default'));
+			$this->DISK = $this->FILE_DISK_DEFAULT ?: config('filemanager.disk_default');
+			$this->customVariablesStarted = true;
 		}
 	}
 
-	private function initVariables() {
+	public function initVariables() {
 		$this->initCustomVariables();
-
-		$this->FOLDER = $this->secureFolder($this->FILE_FOLDER_DEFAULT ?: config('filemanager.folder_default'));
-		$this->DISK = $this->FILE_DISK_DEFAULT ?: config('filemanager.disk_default');
 		$this->CONFIG_DISK = config("filesystems.disks.$this->DISK");
 		//get environment of disk or default config
 		$environment = config("filesystems.disks.$this->DISK.visibility");
 		$this->ENVIRONMENT = $environment == FileManager::ENVIRONMENT_PUBLIC;
 	}
-
 	//endregion
 
 	//region relathionship
