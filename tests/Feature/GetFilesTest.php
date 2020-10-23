@@ -79,7 +79,11 @@ class GetFilesTest extends TestCase {
 		$this->assertSame(1, $this->user1->files()->withNotType('img')->withNotGroup('upload')->count());
 	}
 
-	public function testGetFilesTypeTxtWithScopeGlobal() {
-
+	public function testGetFilesWithScopeGlobal() {
+		$file = UploadedFile::fake()->create('document.pdf');
+		$this->user1->addFile($file, 'upload', 'name');
+		$this->assertSame(1, $this->user1->pdfs()->count());
+		$this->assertSame(1, $this->user1->pdfs()->withGroup('upload')->count());
+		$this->assertSame(0, $this->user1->pdfs()->withGroup('gallery')->count());
 	}
 }
