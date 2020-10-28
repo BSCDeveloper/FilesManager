@@ -34,8 +34,8 @@
     "orchestra/canvas"    : "5.x-dev"
   },
   "scripts"      : {
-    "test"    : "php vendor/phpunit/phpunit/phpunit",
-    "testone" : "php vendor/phpunit/phpunit/phpunit --filter",
+    "test"    : "php vendor/phpunit/phpunit/phpunit --testdox --colors=always --group",
+    "testone" : "php vendor/phpunit/phpunit/phpunit --testdox --colors=always --filter",
     "artisan" : "php vendor/orchestra/canvas/canvas"
   }
 }

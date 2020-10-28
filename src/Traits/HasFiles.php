@@ -45,12 +45,11 @@ trait HasFiles {
 	/**
 	 * Attach file to model
 	 * @param UploadedFile $file
-	 * @param string       $group
-	 * @param string       $name
-	 * @param string       $description
+	 * @param array        $options
 	 * @return FileManager|UploadedFile
 	 */
-	public function addFile(UploadedFile $file, $group = '', $name = "", $description = '') {
+	public function addFile(UploadedFile $file, $options = []) {
+
 		//init variables
 		$this->initVariables();
 		$file = FileManager::createFile(
@@ -58,9 +57,7 @@ trait HasFiles {
 			$this->DISK,
 			$this->FOLDER,
 			$this->ENVIRONMENT,
-			$group ?: '',
-			$name ?: '',
-			$description ?: ''
+			$options
 		);
 		$this->files()->save($file);
 		return $file;
@@ -69,29 +66,25 @@ trait HasFiles {
 	/**
 	 * Attach a file from a path
 	 * @param        $path path of a file
-	 * @param string $group
-	 * @param string $name
-	 * @param string $description
+	 * @param array  $options
 	 * @return FileManager|UploadedFile
 	 */
-	public function addFileFromPath($path, $group = '', $name = "", $description = '') {
+	public function addFileFromPath($path, $options = []) {
 		$file = new UploadedFile($path, basename($path));
-		return $this->addFile($file, $group, $name, $description);
+		return $this->addFile($file, $options);
 	}
 
 	/**
 	 * Attach a file by passing it content
 	 * @param        $content content from file
 	 * @param        $extension
-	 * @param string $group
-	 * @param string $name
-	 * @param string $description
+	 * @param array  $options
 	 * @return FileManager|UploadedFile
 	 */
-	public function addFileWithContent($content, $extension, $group = '', $name = "", $description = '') {
+	public function addFileWithContent($content, $extension, $options = []) {
 		$nameFileTemp = FileManager::generateName() . ".$extension";
 		$source = FileManager::createTempFile($nameFileTemp, $content);
-		$file = $this->addFileFromPath($source, $group, $name, $description);
+		$file = $this->addFileFromPath($source, $options);
 		FileManager::removeTempFile($nameFileTemp);
 		return $file;
 	}
@@ -99,16 +92,15 @@ trait HasFiles {
 	/**
 	 * Attach a file and save it like logo of model. Delete logo before if exists
 	 * @param UploadedFile $file
-	 * @param string       $name
-	 * @param string       $description
+	 * @param array        $options
 	 * @return FileManager|UploadedFile
 	 */
-	public function setLogo(UploadedFile $file, $name = "", $description = '') {
+	public function setLogo(UploadedFile $file, $options = []) {
 		if ($this->logo) {
 			$this->logo->delete();
 		}
-		$group = $this->GROUP_LOGO;
-		return $this->addFile($file, $group, $name, $description);
+		$options["group"] = $this->GROUP_LOGO;
+		return $this->addFile($file, $options);
 	}
 
 	//endregion

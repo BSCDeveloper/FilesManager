@@ -12,6 +12,9 @@ class DeleteFilesTest extends TestCase {
 		parent::setUp();
 	}
 
+	/**
+	 * @group delete
+	 */
 	public function testDeleteFile() {
 		$file = UploadedFile::fake()->image('avatar.png', 100);
 		$this->user1->addFile($file);
@@ -28,6 +31,9 @@ class DeleteFilesTest extends TestCase {
 		$this->assertSame(0, $this->user1->files()->count());
 	}
 
+	/**
+	 * @group delete
+	 */
 	public function testDeleteAllFiles() {
 		$file = UploadedFile::fake()->image('avatar.png', 100);
 		$this->user1->addFile($file);

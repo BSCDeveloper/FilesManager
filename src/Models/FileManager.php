@@ -39,11 +39,13 @@ class FileManager extends Model {
 
 	//public
 
-	public function copy($folder = null, $disk = null, $model = null) {
-		$model = $model ?: $this->filesable;
-		$name = $this->file_name;
-		$group = $this->group;
-		$description = $this->description;
+	public function copy($options = []) {
+		$model = !empty($options["model"]) ? $options["model"] : $this->filesable;
+		$name = !empty($options["name"]) ? $options["name"] : $this->file_name;
+		$group = !empty($options["group"]) ? $options["group"] : $this->group;
+		$description = !empty($options["description"]) ? $options["description"] : $this->description;
+		$folder = !empty($options["folder"]) ? $options["folder"] : null;
+		$disk = !empty($options["disk"]) ? $options["disk"] : null;
 
 		if ($folder) {
 			$model->folder($folder);
@@ -53,7 +55,11 @@ class FileManager extends Model {
 			$model->disk($disk);
 		}
 
-		$model->addFileFromContent($this->getContent, $this->file_extension, $group, $name, $description);
+		return $model->addFileWithContent($this->getContent, $this->file_extension, [
+			"name"        => $name,
+			"group"       => $group,
+			"description" => $description
+		]);
 	}
 
 	public function move($folder) {
@@ -216,7 +222,11 @@ class FileManager extends Model {
 		return Storage::disk($disk)->putFileAs($folder, $file, $name);
 	}
 
-	static public function createFile($file, $disk, $folder, $environment, $group, $name, $description) {
+	static public function createFile($file, $disk, $folder, $environment, $options = []) {
+		$name = !empty($options['name']) ? $options['name'] : '';
+		$description = !empty($options['description']) ? $options['description'] : '';
+		$group = !empty($options['group']) ? $options['group'] : '';
+
 		//get info from file
 		$dataFile = self::prepareFileData($file, $name, $folder, $disk);
 

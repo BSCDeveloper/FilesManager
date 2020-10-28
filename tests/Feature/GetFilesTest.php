@@ -9,9 +9,11 @@ class GetFilesTest extends TestCase {
 
 	public function setUp(): void {
 		parent::setUp();
-
 	}
 
+	/**
+	 * @group getters
+	 */
 	public function testGetSrcImages() {
 		$file = UploadedFile::fake()->image('avatar.png', 100);
 		$file1 = $this->user1->addFile($file);
@@ -25,12 +27,18 @@ class GetFilesTest extends TestCase {
 		$this->assertStringContainsString('private/file', $file2->forceSrc);
 	}
 
+	/**
+	 * @group getters
+	 */
 	public function testGetContentOfFile() {
 		$file = UploadedFile::fake()->createWithContent('document.pdf', 'hello world');
 		$file1 = $this->user1->addFile($file);
 		$this->assertStringContainsString($file1->getContent, 'hello world');
 	}
 
+	/**
+	 * @group getters
+	 */
 	public function testModifyContentOfFile() {
 		$file = UploadedFile::fake()->createWithContent('document.pdf', 'hello world');
 		$file1 = $this->user1->addFile($file);
@@ -48,13 +56,20 @@ class GetFilesTest extends TestCase {
 		$this->assertStringContainsString('Prepend text', $file1->getContent);
 	}
 
+	/**
+	 * @group getters
+	 */
 	public function testExistFile() {
 		$file = UploadedFile::fake()->createWithContent('document.pdf', 'hello world');
-		$this->user1->addFile($file, '', 'name');
+		$this->user1->addFile($file, [
+			"name" => "name"
+		]);
 		$this->assertTrue($this->user1->existsFile('name.pdf'));
 	}
 
-
+	/**
+	 * @group getters
+	 */
 	public function testGetFolderAndDisk() {
 		$this->assertSame('files', $this->user1->getFolder());
 		$this->assertSame('public', $this->user1->getDisk());
@@ -63,13 +78,27 @@ class GetFilesTest extends TestCase {
 		$this->assertSame('s3', $this->user1->getDisk());
 	}
 
+	/**
+	 * @group getters
+	 */
 	public function testScopesFiles() {
 		$file = UploadedFile::fake()->create('document.pdf');
 		$image = UploadedFile::fake()->image('avatar.jpg');
-		$this->user1->addFile($file, 'upload', 'name');
-		$this->user1->addFile($file, '', 'name');
-		$this->user1->addFile($image, 'gallery', 'avatar');
-		$this->user1->addFile($image, 'gallery', 'avatar');
+		$this->user1->addFile($file, [
+			"group" => "upload",
+			"name"  => "name"
+		]);
+		$this->user1->addFile($file, [
+			"name" => "name"
+		]);
+		$this->user1->addFile($image, [
+			"group" => "gallery",
+			"name"  => "avatar"
+		]);
+		$this->user1->addFile($image, [
+			"group" => "gallery",
+			"name"  => "avatar"
+		]);
 		$this->assertSame(1, $this->user1->files()->withGroup('upload')->count());
 		$this->assertSame(2, $this->user1->files()->withGroup('gallery')->count());
 		$this->assertSame(3, $this->user1->files()->withNotGroup('upload')->count());
@@ -79,9 +108,15 @@ class GetFilesTest extends TestCase {
 		$this->assertSame(1, $this->user1->files()->withNotType('img')->withNotGroup('upload')->count());
 	}
 
+	/**
+	 * @group getters
+	 */
 	public function testGetFilesWithScopeGlobal() {
 		$file = UploadedFile::fake()->create('document.pdf');
-		$this->user1->addFile($file, 'upload', 'name');
+		$this->user1->addFile($file, [
+			"group" => "upload",
+			"name"  => "name"
+		]);
 		$this->assertSame(1, $this->user1->pdfs()->count());
 		$this->assertSame(1, $this->user1->pdfs()->withGroup('upload')->count());
 		$this->assertSame(0, $this->user1->pdfs()->withGroup('gallery')->count());

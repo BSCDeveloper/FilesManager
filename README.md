@@ -10,10 +10,12 @@ $user = User::find(1);
 //attach a file with a User model  
 //thats will be save the file on bbdd and the storage app/public/files by default
 $user->addFile($request->file('file'));  
+
 //for download all images into a zip file
 $user1->images->toZipFile()->download('allMyImages');
+
 //for delete all images with date less now
-$user1->images()->where('created_ar', '<', Carbon:now())->delete();
+$user1->images()->where('created_ar', '<', Carbon:now())->removeFiles();
 ```  
 And show the image files in the views:  
 ```  
@@ -36,8 +38,7 @@ composer test
 - [Configuration](#configuration)      
   - [Other config ](#other-config)      
   - [File extensions](#file-extensions)      
-- [Usage](#usage)      
-  - [Options](#options)      
+- [Usage](#usage)
   - [Adding a file](#adding-a-file)      
   - [Get files](#get-files)   
   - [Delete](#delete)   
@@ -281,7 +282,7 @@ class User extends Authenticatable {
 
 Now the model *User* can attach files to self.  
    
-### Options 
+#### Options 
 
 | Option ||     
 |--|--|    
@@ -300,6 +301,7 @@ Now the model *User* can attach files to self.
 | created_at | Date of creation of file    
 | updated_at | Date of update of file  
 
+#### Attributes
 
 | Attributes ||       
 |--|--|      
@@ -309,15 +311,23 @@ Now the model *User* can attach files to self.
 | downloadSrc | return the url for download the file (public only).  
 | forceDownloadSrc | return the url for download the file (all visibility).
 
+#### Methods
 
 | Method |Parameter| |       
 |--|--|--|      
 | delete| | Remove a file from database and storage. 
-| copy| |  
+| copy| options (array) | Copy a file in folder and disk indicated and attached to model. 
 | move| | 
 | append| text | Append text to the content of file.       
 | prepend |text| Prepend text to the content of file.  
 | download |name (optional)| return download response of the file. If name isn`t given, the default name is the name of file saved on database. 
+  
+#### Collection methods
+    
+| Method |Parameter| |         
+|--|--|--|        
+| removeFiles| | Remove all files from database and storage.   
+| toZipFile|| Copy all files into a new zip file
   
 
 ### Adding a file 
@@ -336,20 +346,24 @@ Automatically FileManager create a unique random name and save the file into the
 "disk_default" => "public",  
 ```
   
-In case that the name exists in the disk and folder, FileManager   automatically change de name to `name_(1).extension` to make sure the file will not be overwritten. This method accept three parameters.    
+In case that the name exists in the disk and folder, FileManager   
+automatically change de name to `name_(1).extension` to make sure the file will not be overwritten.
+This method accept a file as first parameter and array options as second parameter.    
   
-|Parameter| Description | Default |    
-|--|--|--|    
-| file | The file uploaded |    
-| group | The group to which the file belongs. (*optional*)|void     
-| name | The name of file without extension. (*optional*)|random string    
-| description |  A description for a file (*optional*)|void     
+|Parameter|   |      
+|--|--|  
+| file | The file uploaded |      
+| options (array) | For indicate group, name and description of file
     
 **return** a FileManager class with the file saved.
     
 ```  
-$newFile = $user->addFile($request->file('file'), "gallery", "myNameFile", "A description for a file" );
- ```  
+$newFile = $user->addFile($request->file('file'),[
+    "group"       => "gallery",
+    "name"        => "myNameFile",
+    "description" => "A description for a file"
+]);
+```  
 
 Note that it is not necessary to indicate the file extension because FileManager will apply the correct extension to the file and it will check the file type according to the configuration.
 
@@ -363,13 +377,17 @@ The extension will be applied automatically, see [File extensions](#file-extensi
 
 #### Add files from path
 We can add files from path resource.
- This method receives the file path as the first parameter and as optional parameters it has the same as 
+This method receives the file path as the first parameter and as optional parameters it has the same as 
 the `addFile` method: *group, name and description*
 
 ```  
 $newFile = $user->addFileFromPath($pathOfFile);
-$newFile = $user->addFileFromPath($pathOfFile, "gallery", "myNameFile", "A description for a file" );
- ```  
+$newFile = $user->addFileFromPath($pathOfFile,[
+    "group"       => "gallery",
+    "name"        => "myNameFile",
+    "description" => "A description for a file"
+]);
+```  
 
 #### Add files with content
 We can add files with content. 
@@ -380,9 +398,17 @@ the `addFile` method: *group, name and description*
 
 ```  
 $newFile = $user->addFileWithContent($pathOfFile, $extension);
-$newFile = $user->addFileWithContent($pathOfFile, $extension, "gallery", "myNameFile", "A description for a file" );
+$newFile = $user->addFileWithContent($pathOfFile, $extension, [
+    "group"       => "gallery",
+    "name"        => "myNameFile",
+    "description" => "A description for a file"
+]);
 $newFile = $user->addFileWithContent('hello worl', 'txt');
-$newFile = $user->addFileWithContent('hello worl', 'txt', "gallery", "myNameFile", "A description for a file" );
+$newFile = $user->addFileWithContent('hello worl', 'txt', [
+    "group"       => "gallery",
+    "name"        => "myNameFile",
+    "description" => "A description for a file"
+]);
  ```  
 
 ### Get files 
@@ -504,20 +530,18 @@ Route::get('myNameOfPathDownloadFiles/{has}', function ($has) {
 "symbolic_link_download_files" => "download.route"
 ```  
 
-#### Copy 
+### Copy 
 
 The method **copy** will make a copy of the same file with same name. It will be saved in the same folder and disk as the original file. This method accepts three parameters.    
 
-|Parameter| Description | Default |    
+|Parameter|  |    
 |--|--|--|    
-| folder | The folder to save(*optional*)|null    
-| disk| The disk to use  (*optional*)| null    
-| model| The model to attach the new file (*optional*)| null    
+| options (optional) | Change folder, disk, model, group, name and description        
 
 ``` 
 $file = $user->files()->find(1);  
 $file2 = $file->copy();  //for $user1  
-$file2 = $file->copy("/copies", 'public', $user2);  //attach to user2  
+$file2 = $file->copy();  //attach to user2  
 ```
 
 If the file exists in the folder and disk specified, FileManager will change the name to `nameOfFile_(1).extension` for prevent overwrite.  
