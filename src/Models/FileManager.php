@@ -38,28 +38,40 @@ class FileManager extends Model {
 	}
 
 	//public
+	private function copyAFile($model, $options) {
+		$model = $model ?: $this->filesable;
+		if (!empty($options["folder"])) {
+			$folder = $options["folder"];
+		} else {
+			$folder = $model ? $model->getFolder() : $this->folder;
+		}
 
-	public function copy($options = []) {
-		$model = !empty($options["model"]) ? $options["model"] : $this->filesable;
+		if (!empty($options["disk"])) {
+			$disk = $options["disk"];
+		} else {
+			$disk = $model ? $model->getDisk() : $this->disk;
+		}
+
+		$model->folder($folder);
+		$model->disk($disk);
+
 		$name = !empty($options["name"]) ? $options["name"] : $this->file_name;
 		$group = !empty($options["group"]) ? $options["group"] : $this->group;
 		$description = !empty($options["description"]) ? $options["description"] : $this->description;
-		$folder = !empty($options["folder"]) ? $options["folder"] : null;
-		$disk = !empty($options["disk"]) ? $options["disk"] : null;
-
-		if ($folder) {
-			$model->folder($folder);
-		}
-
-		if ($disk) {
-			$model->disk($disk);
-		}
 
 		return $model->addFileWithContent($this->getContent, $this->file_extension, [
 			"name"        => $name,
 			"group"       => $group,
 			"description" => $description
 		]);
+	}
+
+	public function copy($options = []) {
+		return $this->copyAFile(null, $options);
+	}
+
+	public function copyToModel($model, $options = []) {
+		return $this->copyAFile($model, $options);
 	}
 
 	public function move($folder) {

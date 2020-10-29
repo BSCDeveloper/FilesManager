@@ -353,7 +353,7 @@ This method accept a file as first parameter and array options as second paramet
 |Parameter|   |      
 |--|--|  
 | file | The file uploaded |      
-| options (array) | For indicate group, name and description of file
+| options (array) | For indicate *group*, *name* and *description* of file
     
 **return** a FileManager class with the file saved.
     
@@ -532,19 +532,47 @@ Route::get('myNameOfPathDownloadFiles/{has}', function ($has) {
 
 ### Copy 
 
-The method **copy** will make a copy of the same file with same name. It will be saved in the same folder and disk as the original file. This method accepts three parameters.    
+The method **copy** will make a copy of the same file with same name. It will be saved in the same folder and disk as the original file. 
+This method accepts array options as parameter.    
 
 |Parameter|  |    
-|--|--|--|    
+|--|--|    
 | options (optional) | Change folder, disk, model, group, name and description        
 
 ``` 
 $file = $user->files()->find(1);  
-$file2 = $file->copy();  //for $user1  
-$file2 = $file->copy();  //attach to user2  
+$file2 = $file->copy();  //copy exactly the flie 
+$file2 = $file->copy([
+    "folder"      => 'fileCopied', //change folder
+    "disk"        => 'private', //change disk
+    "name"        => 'avatar', //change name
+    "group"       => 'gallery', //change group
+    "description" => 'A description of file', //change description
+]);  
 ```
 
-If the file exists in the folder and disk specified, FileManager will change the name to `nameOfFile_(1).extension` for prevent overwrite.  
+If the file exists in the folder and disk specified, FileManager will change the name to `nameOfFile_(1).extension` for prevent overwrite.
+
+#### Copy to model
+ 
+We can copy a file into a other model that implement the *HasFile* trait.
+For this, use the method **copyToModel** passing the model to copy the file 
+as a first parameter and array options as second parameter.
+
+``` 
+$file = $user->files()->find(1);  
+$file2 = $file->copyToModel($user2);  //copy exactly the flie attaching to $user2
+$file2 = $file->copyToModel($user2,[
+    "folder"      => 'fileCopied', //change folder
+    "disk"        => 'private', //change disk
+    "name"        => 'avatar', //change name
+    "group"       => 'gallery', //change group
+    "description" => 'A description of file', //change description
+]);  
+```
+
+#### Copy many files
+
   
 ### Files to zip 
 
