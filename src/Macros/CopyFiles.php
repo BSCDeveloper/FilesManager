@@ -10,10 +10,11 @@ namespace Fboseca\Filesmanager\Macros;
 class CopyFiles {
 	public function __invoke() {
 		return function ($options = []) {
-			$this->each(function ($file) use ($options) {
-				$file->copy($options);
+			$newFiles = collect();
+			$this->each(function ($file) use ($options, $newFiles) {
+				$newFiles->add($file->copy($options));
 			});
-			return $this;
+			return $newFiles;
 		};
 	}
 }

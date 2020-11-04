@@ -38,7 +38,7 @@ class FileManager extends Model {
 	}
 
 	//public
-	private function copyAFile($model, $options) {
+	private function copyThis($model, $options) {
 		$model = $model ?: $this->filesable;
 		if (!empty($options["folder"])) {
 			$folder = $options["folder"];
@@ -67,15 +67,26 @@ class FileManager extends Model {
 	}
 
 	public function copy($options = []) {
-		return $this->copyAFile(null, $options);
+		return $this->copyThis(null, $options);
 	}
 
 	public function copyToModel($model, $options = []) {
-		return $this->copyAFile($model, $options);
+		return $this->copyThis($model, $options);
 	}
 
-	public function move($folder) {
-
+	public function move($folder, $disk = null, $options = []) {
+		$disk = $disk ?: $this->disk;
+		//copy the file to the new location
+		$path = Storage::disk($disk)->path($this->url);
+		$file = new UploadedFile($path, $this->name);
+		$newFile = self::createFile($file, $disk, $folder, $this->public, $options);
+		//remove file from last location
+		$this->removeFileFromPlatform();
+		//update information of file
+		$this->fill($newFile->toArray());
+		$this->save();
+		//refresh data
+		$this->fresh();
 	}
 
 	public function filesable() {

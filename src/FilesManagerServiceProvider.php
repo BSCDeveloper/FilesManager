@@ -3,6 +3,7 @@
 namespace Fboseca\Filesmanager;
 
 use Fboseca\Filesmanager\Macros\CopyFiles;
+use Fboseca\Filesmanager\Macros\CopyFilesToModel;
 use Fboseca\Filesmanager\Macros\RemoveFiles;
 use Fboseca\Filesmanager\Macros\ToZipFile;
 use Illuminate\Support\Collection;
@@ -45,9 +46,10 @@ class FilesManagerServiceProvider extends ServiceProvider {
 
 	private function macros(): array {
 		return [
-			'toZipFile'   => ToZipFile::class,
-			'removeFiles' => RemoveFiles::class,
-			'copyFiles'   => CopyFiles::class,
+			'toZipFile'        => ToZipFile::class,
+			'removeFiles'      => RemoveFiles::class,
+			'copyFiles'        => CopyFiles::class,
+			'copyFilesToModel' => CopyFilesToModel::class,
 		];
 	}
 }

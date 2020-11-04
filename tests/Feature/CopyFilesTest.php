@@ -142,15 +142,114 @@ class CopyFilesTest extends TestCase {
 		$this->assertSame(1, $this->user2->files()->count());
 	}
 
+	/**
+	 * @group copy
+	 */
 	public function testCopyManyFiles() {
 		$file = UploadedFile::fake()->image('avatar.jpg');
 		$this->user1->addFile($file);
-		$this->user1->addFile($file);
-		$this->user1->files->copyFiles();
+		$this->user1->addFile($file, [
+			"group"       => 'gallery',
+			"description" => 'A description of file',
+		]);
+		$filesCopied = $this->user1->files->copyFiles();
+		$this->assertSame(2, $filesCopied->count());
+		$this->assertTrue($filesCopied->contains('id', 3));
 		$this->assertSame(4, $this->user1->files()->count());
+
+		$fileCopied = $filesCopied->first();
+		$this->assertSame('files', $fileCopied->folder);
+		$this->assertSame('public', $fileCopied->disk);
+		$this->assertSame('', $fileCopied->group);
+		$this->assertSame('', $fileCopied->description);
+
+		$fileCopied = $filesCopied->last();
+		$this->assertSame('files', $fileCopied->folder);
+		$this->assertSame('public', $fileCopied->disk);
+		$this->assertSame('gallery', $fileCopied->group);
+		$this->assertSame('A description of file', $fileCopied->description);
 	}
 
-	public function testCopyFilesInDistinctFolder() {
+	/**
+	 * @group copy
+	 */
+	public function testCopyFilesWithOptions() {
+		$file = UploadedFile::fake()->image('avatar.jpg');
+		$this->user1->addFile($file);
+		$this->user1->addFile($file);
+		$filesCopied = $this->user1->files->copyFiles([
+			"folder"      => 'fileCopied',
+			"disk"        => 'private',
+			"name"        => 'avatar',
+			"group"       => 'gallery',
+			"description" => 'A description of file',
+		]);
+		$this->assertSame(4, $this->user1->files()->count());
+		$count = 0;
+		foreach ($filesCopied as $fileCopied) {
+			$sufix = $count ? "_($count)" : '';
+			$this->assertSame('avatar' . $sufix . ".jpg", $fileCopied->name);
+			$this->assertSame('fileCopied', $fileCopied->folder);
+			$this->assertSame('private', $fileCopied->disk);
+			$this->assertSame('gallery', $fileCopied->group);
+			$this->assertSame('A description of file', $fileCopied->description);
+			$count++;
+		}
+	}
 
+	/**
+	 * @group copy
+	 */
+	public function testCopyFilesToModel() {
+		$file = UploadedFile::fake()->image('avatar.jpg');
+		$this->user1->addFile($file);
+		$this->user1->addFile($file);
+		$filesCopied = $this->user1->files->copyFilesToModel($this->user2);
+		$this->assertSame(2, $filesCopied->count());
+		$this->assertTrue($filesCopied->contains('id', 3));
+		$this->assertSame(2, $this->user1->files()->count());
+		$this->assertSame(2, $this->user2->files()->count());
+	}
+
+	/**
+	 * @group copy
+	 */
+	public function testCopyFilesToModelWithOptions() {
+		$file = UploadedFile::fake()->image('avatar.jpg');
+		$this->user1->addFile($file);
+		$this->user1->addFile($file);
+		$filesCopied = $this->user1->files->copyFilesToModel($this->user2, [
+			"folder"      => 'fileCopied',
+			"disk"        => 'private',
+			"name"        => 'avatar',
+			"group"       => 'gallery',
+			"description" => 'A description of file',
+		]);
+		$this->assertSame(2, $filesCopied->count());
+		$this->assertTrue($filesCopied->contains('id', 3));
+		$this->assertSame(2, $this->user1->files()->count());
+		$this->assertSame(2, $this->user2->files()->count());
+		$count = 0;
+		foreach ($filesCopied as $fileCopied) {
+			$sufix = $count ? "_($count)" : '';
+			$this->assertSame('avatar' . $sufix . ".jpg", $fileCopied->name);
+			$this->assertSame('fileCopied', $fileCopied->folder);
+			$this->assertSame('private', $fileCopied->disk);
+			$this->assertSame('gallery', $fileCopied->group);
+			$this->assertSame('A description of file', $fileCopied->description);
+			$count++;
+		}
+	}
+
+	/**
+	 * @group copy
+	 */
+	public function testCopyFilesCopied() {
+		$file = UploadedFile::fake()->image('avatar.jpg');
+		$this->user1->addFile($file);
+		$this->user1->addFile($file);
+		$filesCopied = $this->user1->files->copyFiles();
+		$filesCopied->copyFiles();
+		$this->assertSame(6, $this->user1->files()->count());
 	}
 }

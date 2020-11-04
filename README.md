@@ -1,9 +1,11 @@
 
 [![Packagist Version](https://img.shields.io/packagist/v/fboseca/files_manager)](https://packagist.org/packages/fboseca/files_manager)  ![Packagist License](https://img.shields.io/packagist/l/fboseca/files_manager) [![Laravel](https://img.shields.io/badge/Laravel-^5.8-orange.svg)](https://laravel.com/docs/5.8) ![Php](https://img.shields.io/badge/php->=7.1.3-orange.svg)  
+
 # What It Does      
  This package allows you to keep track of the uploaded files, for this it associates each file to a Laravel model, getting a quick and easy manage.  
   
 Once installed you can do stuff like this:  
+
 ```  
 $user = User::find(1);  
   
@@ -17,7 +19,9 @@ $user1->images->toZipFile()->download('allMyImages');
 //for delete all images with date less now
 $user1->images()->where('created_ar', '<', Carbon:now())->removeFiles();
 ```  
+
 And show the image files in the views:  
+
 ```  
 //return all images attached to User  
 @foreach ($user->images as $file )          
@@ -29,7 +33,9 @@ And show the image files in the views:
     <img src="{{$file->src}}"  width="100"/> 
 @endforeach  
 ```  
-## Testing  
+
+## Testing
+  
 ```  
 composer test  
 ```  
@@ -51,7 +57,8 @@ composer test
 - [Tips](#tips)      
   - [Method exists](#method-exists)               
   - [Scopes](#scopes)       
-  - [Create a relationship for a type of file](#create-a-relationship-for-a-type-of-file)       
+  - [Create a relationship for a type of file](#create-a-relationship-for-a-type-of-file)
+- [Api](#api)        
   
 ## Installation    
 This requires Laravel 5.8 or highter and Php 7.1.3 or highter.    
@@ -280,55 +287,7 @@ class User extends Authenticatable {
 ```  
 
 
-Now the model *User* can attach files to self.  
-   
-#### Options 
-
-| Option ||     
-|--|--|    
-| name | The full name of file.     
-| group | The group to which the file belongs      
-| description | The description of file    
-| folder | The folder where the file is hosted     
-| url |The combination of folder and name    
-| type | The type of file is configured in `config/filemanager.php` | mime_type | The mime_type of file    
-| file_name | Only the name without extension    
-| file_extension | Only the real extension of file    
-| size | The size of file in bytes    
-| public | Is a file public or not    
-| disk | The disk where the file is hosted    
-| driver | The type of Laravel´s driver which was used to save the file    
-| created_at | Date of creation of file    
-| updated_at | Date of update of file  
-
-#### Attributes
-
-| Attributes ||       
-|--|--|      
-| getContent | return the content of file.       
-| src | return url for access to file (public only). Is used for img tag.
-| forceSrc | return url for access to file (all visibility).  
-| downloadSrc | return the url for download the file (public only).  
-| forceDownloadSrc | return the url for download the file (all visibility).
-
-#### Methods
-
-| Method |Parameter| |       
-|--|--|--|      
-| delete| | Remove a file from database and storage. 
-| copy| options (array) | Copy a file in folder and disk indicated and attached to model. 
-| move| | 
-| append| text | Append text to the content of file.       
-| prepend |text| Prepend text to the content of file.  
-| download |name (optional)| return download response of the file. If name isn`t given, the default name is the name of file saved on database. 
-  
-#### Collection methods
-    
-| Method |Parameter| |         
-|--|--|--|        
-| removeFiles| | Remove all files from database and storage.   
-| toZipFile|| Copy all files into a new zip file
-  
+Now the model *User* can attach files to self.    
 
 ### Adding a file 
 
@@ -571,8 +530,41 @@ $file2 = $file->copyToModel($user2,[
 ]);  
 ```
 
-#### Copy many files
+>This method return the file copied.
 
+#### Copy many files
+For copy many files use method `copyFiles` or `copyFilesToModel`. 
+This method can only be used in collections of FilesManager.
+All files will be copied with the same information as the original file. 
+To change any parameter use the option´s array.
+If the file to be copied already exists on the indicated disk and folder, 
+the name will be changed to avoid overwriting. 
+Both methods return a collection with the copied files.
+
+``` 
+$file = $user->files()->find(1);  
+$filesCopied = $user->files->copyFiles();  //copy all files to the same folder and disk
+//all files will be copied with this options.
+$filesCopied = $user->files->copyFiles([
+      "folder"      => 'fileCopied', 
+      "disk"        => 'private', 
+      "name"        => 'avatar', 
+      "group"       => 'gallery', 
+      "description" => 'A description of file', 
+]);  
+
+//copy files from user1 to user2
+$filesCopied = $user->files->copyFilesToModel($user2);
+$filesCopied = $user->files->copyFilesToModel( $user2, [
+      "folder"      => 'fileCopied', 
+      "disk"        => 'private', 
+      "name"        => 'avatar', 
+      "group"       => 'gallery', 
+      "description" => 'A description of file', 
+]); 
+```  
+
+### Move 
   
 ### Files to zip 
 
@@ -790,3 +782,55 @@ $user->words()->toZipFile();
 ```  
   
 This is a good idea if you want attach a kind of file with others tables of the database or apply any functions.
+
+### Api
+
+#### Options 
+
+| Option ||     
+|--|--|    
+| name | The full name of file.     
+| group | The group to which the file belongs      
+| description | The description of file    
+| folder | The folder where the file is hosted     
+| url |The combination of folder and name    
+| type | The type of file is configured in `config/filemanager.php` | mime_type | The mime_type of file    
+| file_name | Only the name without extension    
+| file_extension | Only the real extension of file    
+| size | The size of file in bytes    
+| public | Is a file public or not    
+| disk | The disk where the file is hosted    
+| driver | The type of Laravel´s driver which was used to save the file    
+| created_at | Date of creation of file    
+| updated_at | Date of update of file  
+
+#### Attributes
+
+| Attributes ||       
+|--|--|      
+| getContent | return the content of file.       
+| src | return url for access to file (public only). Is used for img tag.
+| forceSrc | return url for access to file (all visibility).  
+| downloadSrc | return the url for download the file (public only).  
+| forceDownloadSrc | return the url for download the file (all visibility).
+
+#### Methods
+
+| Method |Parameter| |         
+|--|--|--|        
+| delete| | Remove a file from database and storage.   
+| copy| options | Copy a file.
+| copyToModel| options | Copy a file and attached to model.
+| move| |   
+| append| text | Append text to the content of file.         
+| prepend |text| Prepend text to the content of file.    
+| download |name (optional)| return download response of the file. If name isn`t given, the default name is the name of file saved on database. 
+  
+#### Collection methods
+    
+| Method |Parameter| |         
+|--|--|--|        
+| removeFiles| | Remove all files from database and storage. 
+| copyFiles| options | Copy all files. 
+| copyFilesToModel| options | Copy all files. 
+| toZipFile|| Copy all files into a new zip file
