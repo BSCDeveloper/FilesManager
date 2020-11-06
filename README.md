@@ -312,7 +312,7 @@ This method accept a file as first parameter and array options as second paramet
 |Parameter|   |      
 |--|--|  
 | file | The file uploaded |      
-| options (array) | For indicate *group*, *name* and *description* of file
+| options (array) | For indicate *group*, *name*, *description*, *disk* and *folder*  of file
     
 **return** a FileManager class with the file saved.
     
@@ -320,7 +320,9 @@ This method accept a file as first parameter and array options as second paramet
 $newFile = $user->addFile($request->file('file'),[
     "group"       => "gallery",
     "name"        => "myNameFile",
-    "description" => "A description for a file"
+    "description" => "A description for a file",
+    "disk"        => "s3",
+    "folder"      => "otherFolder"
 ]);
 ```  
 
@@ -344,7 +346,9 @@ $newFile = $user->addFileFromPath($pathOfFile);
 $newFile = $user->addFileFromPath($pathOfFile,[
     "group"       => "gallery",
     "name"        => "myNameFile",
-    "description" => "A description for a file"
+    "description" => "A description for a file",
+    "disk"        => "s3",
+    "folder"      => "otherFolder"
 ]);
 ```  
 
@@ -356,17 +360,13 @@ Too as optional parameters it has the same as
 the `addFile` method: *group, name and description*
 
 ```  
-$newFile = $user->addFileWithContent($pathOfFile, $extension);
-$newFile = $user->addFileWithContent($pathOfFile, $extension, [
-    "group"       => "gallery",
-    "name"        => "myNameFile",
-    "description" => "A description for a file"
-]);
 $newFile = $user->addFileWithContent('hello worl', 'txt');
 $newFile = $user->addFileWithContent('hello worl', 'txt', [
     "group"       => "gallery",
     "name"        => "myNameFile",
-    "description" => "A description for a file"
+    "description" => "A description for a file",
+    "disk"        => "s3",
+    "folder"      => "otherFolder"
 ]);
  ```  
 
@@ -685,10 +685,12 @@ If we want change the disk or folder only once, we can use the method *folder* a
 
 ```  
 //disk and folder default from filemanager.php or Model class 
-$user->addFile($request->file('file'));          
+$user->addFile($request->file('file')); //saved in disk and folder default          
 
 //now we change the disk and folder    
-$user->disk('s3')->folder("/users/$user->id/documents")->addFile( $request->file('file')); 
+$user->disk('s3')->folder("/users/$user->id/documents")->addFile( $request->file('file'));
+$user->addFile( $request->file('otherFile')); //saved in disk s3 and folder user/1/documents
+ 
 ```  
 
 When we use the method disk and folder, all files attached after will be saved in the folder an disk specified.  
@@ -702,6 +704,23 @@ $user->disk('s3')->folder("/users/$user->id/documents");
 $user->getFolder(); // users/1/documents   
 $user->getDisk(); // s3  
 ```  
+
+Also, we can change the disk and folder only for a one file using the options.
+
+```  
+//change the disk and folder for user
+$user->disk('s3')->folder("/users/$user->id/documents");
+
+$user->addFile( $request->file('otherFile')); //saved in disk s3 and folder user/1/documents
+
+$user->addFile( $request->file('otherFile'),[
+    "folder" => 'copies',
+    "disk"   => "private"
+]); //saved in disk private and folder copies
+
+$user->addFile( $request->file('otherFile')); //saved in disk s3 and folder user/1/documents
+```  
+
   
 ## Tips  
   

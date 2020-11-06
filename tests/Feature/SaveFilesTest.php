@@ -140,6 +140,18 @@ class SaveFilesTest extends TestCase {
 
 		Storage::disk('private')->assertExists('testing/files/' . $fileSaved->name);
 		$this->assertSame('testing/files', $fileSaved->folder);
+
+		$fileSaved2 = $this->user1->addFile($file2);
+		Storage::disk('private')->assertExists('testing/files/' . $fileSaved2->name);
+		$this->assertSame('testing/files', $fileSaved2->folder);
+
+		$fileSaved3 = $this->user1->addFile($file2, [
+			"folder" => "new",
+			"disk"   => "public"
+		]);
+		Storage::disk('public')->assertExists('new/' . $fileSaved3->name);
+		$this->assertSame('new', $fileSaved3->folder);
+		$this->assertSame('public', $fileSaved3->disk);
 	}
 
 	/**

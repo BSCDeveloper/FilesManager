@@ -54,8 +54,8 @@ trait HasFiles {
 		$this->initVariables();
 		$file = FileManager::createFile(
 			$file,
-			$this->DISK,
-			$this->FOLDER,
+			!empty($options["disk"]) ? $options["disk"] : $this->DISK,
+			!empty($options["folder"]) ? $options["folder"] : $this->FOLDER,
 			$this->ENVIRONMENT,
 			$options
 		);

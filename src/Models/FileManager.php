@@ -74,12 +74,12 @@ class FileManager extends Model {
 		return $this->copyThis($model, $options);
 	}
 
-	public function move($folder, $disk = null, $options = []) {
-		$disk = $disk ?: $this->disk;
+	public function move($folder, $options = []) {
+		$newDisk = !empty($options['disk']) ? $options['disk'] : $this->disk;
 		//copy the file to the new location
-		$path = Storage::disk($disk)->path($this->url);
+		$path = Storage::disk($this->disk)->path($this->url);
 		$file = new UploadedFile($path, $this->name);
-		$newFile = self::createFile($file, $disk, $folder, $this->public, $options);
+		$newFile = self::createFile($file, $newDisk, $folder, $this->public, $options);
 		//remove file from last location
 		$this->removeFileFromPlatform();
 		//update information of file
@@ -87,6 +87,14 @@ class FileManager extends Model {
 		$this->save();
 		//refresh data
 		$this->fresh();
+	}
+
+	public function moveToModel($model, $options = []) {
+		$folder = !empty($options['folder']) ? $options['folder'] : $model->getFolder();
+		$disk = !empty($options['disk']) ? $options['disk'] : $model->getDisk();
+		$options["disk"] = $disk;
+		$this->filesable()->associate($model)->save();
+		$this->move($folder, $options);
 	}
 
 	public function filesable() {
