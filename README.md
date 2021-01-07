@@ -50,6 +50,7 @@ composer test
   - [Delete](#delete)   
   - [Download](#download)   
   - [Copy](#copy)  
+  - [Move](#move)  
   - [Files to zip](#files-to-zip)      
   - [Save and get Logo](#save-and-get-logo)         
   - [Get source from Images](#get-source-from-images)  
@@ -533,13 +534,12 @@ $file2 = $file->copyToModel($user2,[
 >This method return the file copied.
 
 #### Copy many files
-For copy many files use method `copyFiles` or `copyFilesToModel`. 
+To copy many files use method `copyFiles` or `copyFilesToModel`. 
 This method can only be used in collections of FilesManager.
 All files will be copied with the same information as the original file. 
 To change any parameter use the option´s array.
 If the file to be copied already exists on the indicated disk and folder, 
-the name will be changed to avoid overwriting. 
-Both methods return a collection with the copied files.
+the name will be changed to avoid overwriting.
 
 ``` 
 $file = $user->files()->find(1);  
@@ -564,8 +564,79 @@ $filesCopied = $user->files->copyFilesToModel( $user2, [
 ]); 
 ```  
 
+>Both methods return a collection with the files copied
+
 ### Move 
   
+The method **move** will move this file to other folder.     
+This method need the folder as first parameter and accepts options`s array as second parameter.
+
+|Parameter|  |      
+|--|--|      
+| folder | The folder where the file will be moved          
+| options (optional) | Change disk, model, group, name and description          
+  
+``` 
+$file = $user->files()->find(1); 
+$file2 = $file->move("other_folder");  //move the file to **other_folder folder**
+$file2 = $file->move('other_folder',[  
+	 "disk"        => 'private', //change disk 
+	 "name"        => 'avatar', //change name 
+	 "group"       => 'gallery', //change group 
+	 "description" => 'A description of file', //change description
+ ]); 
+ ```  
+  
+If the file exists in the folder and disk specified, FileManager will change the name to `nameOfFile_(1).extension` for prevent overwrite.  
+  
+#### Move to model  
+ 
+ We can move a file into a other model that implement the *HasFile* trait.  
+For this, use the method **moveToModel** passing the model where you want move the file   
+as a first parameter and array options as second parameter.  
+  
+``` 
+$file = $user->files()->find(1); 
+$file2 = $file->moveToModel($user2);  //move the flie attaching to $user2  
+$file2 = $file->moveToModel($user2,[  
+	 "folder"      => 'fileCopied', //change folder 
+	 "disk"        => 'private', //change disk 
+	 "name"        => 'avatar', //change name 
+	 "group"       => 'gallery', //change group 
+	 "description" => 'A description of file', //change description
+ ]); 
+ ```  
+  
+>This method return the file moved.  
+
+#### Move many files  
+
+To move many files use method `moveFiles` or `moveFilesToModel`. This method can only be used in collections of FilesManager. The method `moveFiles` needs a folder as first parameter.  
+  
+``` 
+$file = $user->files()->find(1); 
+$filesCopied = $user->files->moveFiles("other_folder");  //move all files to 'other_folder'
+//all files will be moved with options.  
+$filesCopied = $user->files->moveFiles("other_folder",[       
+	 "disk"        => 'private',   
+	 "name"        => 'avatar',   
+	 "group"       => 'gallery',   
+	 "description" => 'A description of file' 
+ ]);   
+
+//move files from user1 to user2  
+$filesCopied = $user->files->moveFilesToModel($user2);  
+$filesCopied = $user->files->moveFilesToModel($user2, [  
+	 "folder"      => 'fileCopied',      
+	 "disk"        => 'private',   
+	 "name"        => 'avatar',   
+	 "group"       => 'gallery',   
+	 "description" => 'A description of file', 
+]); 
+```
+
+>Both methods return a collection with the files moved
+
 ### Files to zip 
 
 Is possible add many files to zip for save or download. Create a zip file this return a *ZipFileManager* class:    
@@ -841,6 +912,7 @@ This is a good idea if you want attach a kind of file with others tables of the 
 | copy| options | Copy a file.
 | copyToModel| options | Copy a file and attached to model.
 | move| |   
+| moveToModel| |   
 | append| text | Append text to the content of file.         
 | prepend |text| Prepend text to the content of file.    
 | download |name (optional)| return download response of the file. If name isn`t given, the default name is the name of file saved on database. 
@@ -851,5 +923,7 @@ This is a good idea if you want attach a kind of file with others tables of the 
 |--|--|--|        
 | removeFiles| | Remove all files from database and storage. 
 | copyFiles| options | Copy all files. 
-| copyFilesToModel| options | Copy all files. 
+| copyFilesToModel| options | Copy all files.
+| moveFiles| options | Move all files to other folder. 
+| moveFilesToModel| options | Move all files to other folder. 
 | toZipFile|| Copy all files into a new zip file

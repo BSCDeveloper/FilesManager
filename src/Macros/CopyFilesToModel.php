@@ -2,7 +2,10 @@
 
 namespace Fboseca\Filesmanager\Macros;
 
-
+/**
+ * Class CopyFilesToModel
+ * @package Fboseca\Filesmanager\Macros
+ */
 class CopyFilesToModel {
 	public function __invoke() {
 		return function ($model, $options = []) {
