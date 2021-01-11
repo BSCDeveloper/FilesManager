@@ -17,7 +17,7 @@ $user->addFile($request->file('file'));
 $user1->images->toZipFile()->download('allMyImages');
 
 //for delete all images with date less now
-$user1->images()->where('created_ar', '<', Carbon:now())->removeFiles();
+$user1->images()->where('created_at', '<', Carbon:now())->removeFiles();
 ```  
 
 And show the image files in the views:  
@@ -32,12 +32,6 @@ And show the image files in the views:
 @foreach ($user->images()->withGroup('gallery')->get() as $file )          
     <img src="{{$file->src}}"  width="100"/> 
 @endforeach  
-```  
-
-## Testing
-  
-```  
-composer test  
 ```  
   
 - [Installation](#installation)      
@@ -797,7 +791,7 @@ $user->addFile( $request->file('otherFile')); //saved in disk s3 and folder user
   
 ### Method exists   
 
-You can check if a file exist in the folder and disk of model with method **exists**:      
+You can check if a file exist in the folder and disk of model with method **existsFile**:      
 
 ```  
 $user->existsFile("{name-of-file-with-extension}");
