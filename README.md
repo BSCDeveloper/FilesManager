@@ -34,6 +34,7 @@ And show the image files in the views:
 @endforeach  
 ```  
   
+## Contents
 - [Installation](#installation)      
 - [Configuration](#configuration)      
   - [Other config ](#other-config)      
