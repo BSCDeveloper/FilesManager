@@ -9,12 +9,12 @@ use ZipArchive;
 
 class ZipFileManager {
 
-	private $files;
-	private $model;
-	private $folder;
-	private $disk;
-	private $name;
-	private $routeTemp;
+	private $files; //list of files
+	private $model; //model to use
+	private $folder; //folder to save
+	private $disk; //disk to save
+	private $name; //name of file
+	private $routeTemp; //route temporary
 
 	/**
 	 * ZipFileManager constructor.
@@ -23,20 +23,26 @@ class ZipFileManager {
 	public function __construct(Collection $files) {
 		$this->files = $files;
 		if ($this->isZipeable()) {
+			//by default get a first model from files
 			$this->model = $files->first()->filesable;
 			$this->init();
 		}
 	}
 
+	/**
+	 * Init the class and add a files
+	 */
 	public function init() {
+		//create a temporary file
 		$nameTemp = $this->generateName() . ".zip";
 		$this->routeTemp = FileManager::createTempFile($nameTemp);
 		$this->name = $nameTemp;
 
-		// Initializing PHP class
+		//open the file temporary as zipArchive
 		$zip = new ZipArchive();
 		$zip->open($this->routeTemp, ZipArchive::OVERWRITE);
 
+		//add files from the list
 		foreach ($this->files as $file) {
 			$zip->addFromString($file->name, $file->getContent);
 		}
@@ -44,6 +50,12 @@ class ZipFileManager {
 		$zip->close();
 	}
 
+	/**
+	 * Download the file
+	 * @param string $name
+	 * @param bool   $deleteFileTempAfterSend
+	 * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+	 */
 	public function download($name = '', $deleteFileTempAfterSend = true) {
 		if ($this->isZipeable()) {
 			$name = $name ?: $this->name;
@@ -51,6 +63,13 @@ class ZipFileManager {
 		}
 	}
 
+	/**
+	 * Save the file in database and platform
+	 * @param string $name
+	 * @param string $group
+	 * @param string $description
+	 * @return |null
+	 */
 	public function save($name = "", $group = '', $description = '') {
 		if ($this->isZipeable()) {
 			$name = $name ?: $this->name;
@@ -60,12 +79,20 @@ class ZipFileManager {
 			if ($this->disk) {
 				$this->model->disk($this->disk);
 			}
-			return $this->model->addFileFromSource($this->routeTemp, $group, $this->nameWitExtension($name, false), $description);
+			//save a file zip
+			return $this->model->addFileFromPath($this->routeTemp, [
+				"group"       => $group,
+				"description" => $description,
+				"name"        => $this->nameWitExtension($name)
+			]);
 		} else {
 			return null;
 		}
 	}
 
+	/**
+	 * Remove the temporary file
+	 */
 	public function close() {
 		FileManager::removeTempFile($this->name);
 	}
@@ -101,17 +128,26 @@ class ZipFileManager {
 	}
 
 	/**
-	 * To add files
+	 * Add more files to
 	 * @param Collection $files
 	 * @return $this
 	 */
 	public function addFiles(Collection $files) {
 		if ($files->count()) {
 			$this->files = $this->files->merge($files);
-			$this->close();
-			$this->init();
+			$this->close(); //destroy last file
+			$this->init(); //create a new zip file
 		}
 		return $this;
+	}
+
+	/**
+	 * Add one file to zip file
+	 * @param $file
+	 * @return $this
+	 */
+	public function addFile($file) {
+		return $this->addFiles(collect([ $file ]));
 	}
 
 	/**
@@ -121,19 +157,30 @@ class ZipFileManager {
 		return $this->files;
 	}
 
-	private function nameWitExtension($name, $extension = true): string {
-		$aux = str_replace('.zip', '', $name);
-		if ($extension) {
-			$aux .= ".zip";
-		}
-		return $aux;
+	/**
+	 * return the name file with finish '.zip'
+	 * @param $name
+	 * @return string
+	 */
+	private function nameWitExtension($name): string {
+		return Str::finish($name, ".zip");
 	}
 
+	/**
+	 * Generate a random name
+	 * @return string
+	 */
 	private function generateName(): string {
 		return Str::random(10);
 	}
 
+	/**
+	 * return true if zip file has files inside
+	 * @return bool
+	 */
 	private function isZipeable(): bool {
 		return $this->files->count();
 	}
+
+
 }

@@ -84,6 +84,9 @@ class TestCase extends \Orchestra\Testbench\TestCase {
 		$this->user2 = User::find(2);
 	}
 
+	/**
+	 * Create a disk temporary
+	 */
 	private function UpStorages() {
 		Storage::fake('temp', [
 			'driver'     => 'local',

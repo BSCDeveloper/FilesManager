@@ -1,0 +1,4 @@
+* para una funcion en concreto *
+composer testone testSaveFile
+* para un grupo *
+composer test copy

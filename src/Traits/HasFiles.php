@@ -12,34 +12,31 @@ trait HasFiles {
 	public $FILE_FOLDER_DEFAULT = '';
 	public $FILE_DISK_DEFAULT = '';
 
-	//region variables
 	/*
 	|--------------------------------------------------------------------------
 	| variables
 	|--------------------------------------------------------------------------
 	|
 	*/
-	private $FOLDER = '';
-	private $ENVIRONMENT = '';
-	private $DISK = '';
-	private $CONFIG_DISK = '';
-	private $customVariablesStarted = false;
+	private $FOLDER = ''; //folder to save files
+	private $DISK = ''; //disk to save files
+	private $ENVIRONMENT = ''; //true is public environment and false is private
+	private $customVariablesStarted = false; //for initialize variables only once
 	private $GROUP_LOGO = 'logo';
-	//endregion
 
-	//region public
 	/*
 	|--------------------------------------------------------------------------
 	| public methods
 	|--------------------------------------------------------------------------
 	|
 	*/
+
 	/**
 	 * For overwrite, this funcion is used for change the folder and disk
 	 * defaults.
 	 */
-
 	public function fileCustomVariables() {
+		//overwritten for the user
 	}
 
 	/**
@@ -103,9 +100,23 @@ trait HasFiles {
 		return $this->addFile($file, $options);
 	}
 
+	/**
+	 * Initialize variables
+	 */
+	public function initVariables() {
+		$this->initCustomVariables();
+		//get environment of disk or default config
+		$environment = config("filesystems.disks.$this->DISK.visibility");
+		$this->ENVIRONMENT = $environment == FileManager::ENVIRONMENT_PUBLIC;
+	}
 	//endregion
 
-	//region getters
+	/*
+	|--------------------------------------------------------------------------
+	| getters
+	|--------------------------------------------------------------------------
+	|
+	*/
 	/**
 	 * Check if a file exists on the folder and disk of model
 	 * @param $name
@@ -133,8 +144,6 @@ trait HasFiles {
 		return $this->DISK;
 	}
 
-	//region setters
-
 	/**
 	 * Change the disk of model
 	 * @param $disk
@@ -157,33 +166,41 @@ trait HasFiles {
 		return $this;
 	}
 
-	//region private
-
+	/*
+	|--------------------------------------------------------------------------
+	| private methods
+	|--------------------------------------------------------------------------
+	|
+	*/
+	/**
+	 * To make a real path to folder
+	 * @param $url
+	 * @return string
+	 */
 	private function secureFolder($url): string {
 		return trim($url, '/');
 	}
 
+	/**
+	 * Initialize the variables folder and disk
+	 */
 	private function initCustomVariables() {
 		if (!$this->customVariablesStarted) {
-			$this->fileCustomVariables(); //overwrite default folder and disk
-
+			//overwrite default folder and disk by user
+			$this->fileCustomVariables();
 			$this->FOLDER = $this->secureFolder($this->FILE_FOLDER_DEFAULT ?: config('filemanager.folder_default'));
 			$this->DISK = $this->FILE_DISK_DEFAULT ?: config('filemanager.disk_default');
 			$this->customVariablesStarted = true;
 		}
 	}
 
-	public function initVariables() {
-		$this->initCustomVariables();
-		$this->CONFIG_DISK = config("filesystems.disks.$this->DISK");
-		//get environment of disk or default config
-		$environment = config("filesystems.disks.$this->DISK.visibility");
-		$this->ENVIRONMENT = $environment == FileManager::ENVIRONMENT_PUBLIC;
-	}
-	//endregion
 
-	//region relathionship
-
+	/*
+	|--------------------------------------------------------------------------
+	| magic methods
+	|--------------------------------------------------------------------------
+	|
+	*/
 	/**
 	 * Get all files of model
 	 * @return MorphMany
@@ -207,5 +224,4 @@ trait HasFiles {
 	public function getLogoAttribute() {
 		return $this->files()->withGroup($this->GROUP_LOGO)->first();
 	}
-	//endregion
 }

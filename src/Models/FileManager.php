@@ -37,7 +37,132 @@ class FileManager extends Model {
 		});
 	}
 
-	//public
+	public function filesable() {
+		return $this->morphTo();
+	}
+
+	/*
+	|--------------------------------------------------------------------------
+	| public methods
+	|--------------------------------------------------------------------------
+	|
+	*/
+	/**
+	 * Copy this file
+	 * @param array $options
+	 * @return mixed
+	 */
+	public function copy($options = []) {
+		return $this->copyThis(null, $options);
+	}
+
+	/**
+	 * Copy this file into new model
+	 * @param       $model
+	 * @param array $options
+	 * @return mixed
+	 */
+	public function copyToModel($model, $options = []) {
+		return $this->copyThis($model, $options);
+	}
+
+	/**
+	 * Move a file to other folder
+	 * @param       $folder
+	 * @param array $options
+	 */
+	public function move($folder, $options = []) {
+		$newDisk = !empty($options['disk']) ? $options['disk'] : $this->disk;
+		//copy the file to the new location
+		$path = Storage::disk($this->disk)->path($this->url);
+		$file = new UploadedFile($path, $this->name);
+		$newFile = self::createFile($file, $newDisk, $folder, $this->public, $options);
+		//remove file from last location
+		$this->removeFileFromPlatform();
+		//update information of file
+		$this->fill($newFile->toArray());
+		$this->save();
+		//refresh data
+		$this->fresh();
+	}
+
+	/**
+	 * Move a file to other folder and model
+	 * @param       $model
+	 * @param array $options
+	 */
+	public function moveToModel($model, $options = []) {
+		//get folder and disk
+		$folder = !empty($options['folder']) ? $options['folder'] : $model->getFolder();
+		$disk = !empty($options['disk']) ? $options['disk'] : $model->getDisk();
+		//change the filesable for the new model
+		$this->filesable()->associate($model)->save();
+		//move this file to the other location
+		$options["disk"] = $disk;
+		$this->move($folder, $options);
+	}
+
+	/**
+	 * Download a file
+	 * @param string $name
+	 * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\Response
+	 * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+	 */
+	public function download($name = '') {
+		//if file exist
+		if (Storage::disk($this->disk)->exists($this->url)) {
+			$name = $name ? self::secureName($name) . '.' . $this->file_extension : $this->name;
+			$headers = [
+				'Content-Type'        => $this->mime_type,
+				'Content-Description' => 'File Transfer',
+				'Content-Disposition' => "attachment; filename={$name}",
+				'filename'            => $name
+			];
+			return response(Storage::disk($this->disk)->get($this->url), 200, $headers);
+		}
+	}
+
+	/**
+	 * Put a new text append file
+	 * @param array|string $text
+	 * @return FileManager|void
+	 */
+	public function append($text) {
+		Storage::disk($this->disk)->append($this->url, $text);
+		$this->size = Storage::disk($this->disk)->size($this->url);
+		$this->save();
+	}
+
+	/**
+	 * Put a new text prepend the file
+	 * @param $text
+	 */
+	public function prepend($text) {
+		Storage::disk($this->disk)->prepend($this->url, $text);
+		$this->size = Storage::disk($this->disk)->size($this->url);
+		$this->save();
+	}
+
+	/**
+	 * Remove file where is hosted
+	 * @return bool
+	 */
+	public function removeFileFromPlatform() {
+		return Storage::disk($this->disk)->delete($this->url);
+	}
+
+	/*
+		|--------------------------------------------------------------------------
+		| private methods
+		|--------------------------------------------------------------------------
+		|
+		*/
+	/**
+	 * For copy a file into a model. If model is null copy the file in this model
+	 * @param $model
+	 * @param $options
+	 * @return mixed
+	 */
 	private function copyThis($model, $options) {
 		$model = $model ?: $this->filesable;
 		if (!empty($options["folder"])) {
@@ -66,67 +191,12 @@ class FileManager extends Model {
 		]);
 	}
 
-	public function copy($options = []) {
-		return $this->copyThis(null, $options);
-	}
-
-	public function copyToModel($model, $options = []) {
-		return $this->copyThis($model, $options);
-	}
-
-	public function move($folder, $options = []) {
-		$newDisk = !empty($options['disk']) ? $options['disk'] : $this->disk;
-		//copy the file to the new location
-		$path = Storage::disk($this->disk)->path($this->url);
-		$file = new UploadedFile($path, $this->name);
-		$newFile = self::createFile($file, $newDisk, $folder, $this->public, $options);
-		//remove file from last location
-		$this->removeFileFromPlatform();
-		//update information of file
-		$this->fill($newFile->toArray());
-		$this->save();
-		//refresh data
-		$this->fresh();
-	}
-
-	public function moveToModel($model, $options = []) {
-		$folder = !empty($options['folder']) ? $options['folder'] : $model->getFolder();
-		$disk = !empty($options['disk']) ? $options['disk'] : $model->getDisk();
-		$options["disk"] = $disk;
-		$this->filesable()->associate($model)->save();
-		$this->move($folder, $options);
-	}
-
-	public function filesable() {
-		return $this->morphTo();
-	}
-
-	public function download($name = '') {
-		if (Storage::disk($this->disk)->exists($this->url)) {
-			$name = $name ? self::secureName($name) . '.' . $this->file_extension : $this->name;
-			$headers = [
-				'Content-Type'        => $this->mime_type,
-				'Content-Description' => 'File Transfer',
-				'Content-Disposition' => "attachment; filename={$name}",
-				'filename'            => $name
-			];
-			return response(Storage::disk($this->disk)->get($this->url), 200, $headers);
-		}
-	}
-
-	public function append($text) {
-		Storage::disk($this->disk)->append($this->url, $text);
-		$this->size = Storage::disk($this->disk)->size($this->url);
-		$this->save();
-	}
-
-	public function prepend($text) {
-		Storage::disk($this->disk)->prepend($this->url, $text);
-		$this->size = Storage::disk($this->disk)->size($this->url);
-		$this->save();
-	}
-
-	//attributes
+	/*
+	|--------------------------------------------------------------------------
+	| attributes
+	|--------------------------------------------------------------------------
+	|
+	*/
 
 	public function getSrcAttribute() {
 		if ($this->public) {
@@ -169,17 +239,13 @@ class FileManager extends Model {
 		return Storage::disk($this->disk)->get($this->url);
 	}
 
-	//privates
 
-	/**
-	 * Remove file where is hosted
-	 * @return bool
-	 */
-	public function removeFileFromPlatform() {
-		return Storage::disk($this->disk)->delete($this->url);
-	}
-
-	//scopes
+	/*
+		|--------------------------------------------------------------------------
+		| scopes
+		|--------------------------------------------------------------------------
+		|
+		*/
 
 	public function scopeWithGroup($query, $group) {
 		return $query->where('group', $group);
@@ -197,7 +263,12 @@ class FileManager extends Model {
 		return $query->where('type', '<>', $group);
 	}
 
-	//statics
+	/*
+	|--------------------------------------------------------------------------
+	| static methods
+	|--------------------------------------------------------------------------
+	|
+	*/
 
 	static public function encryptId($id): string {
 		return \Crypt::encrypt($id);

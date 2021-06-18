@@ -46,6 +46,10 @@ class FilesManagerServiceProvider extends ServiceProvider {
 		$this->loadRoutesFrom(__DIR__ . '/routes.php');
 	}
 
+	/**
+	 * Macros
+	 * @return string[]
+	 */
 	private function macros(): array {
 		return [
 			'toZipFile'        => ToZipFile::class,
