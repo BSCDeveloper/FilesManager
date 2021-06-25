@@ -1,5 +1,5 @@
 
-[![Packagist Version](https://img.shields.io/packagist/v/fboseca/files_manager)](https://packagist.org/packages/fboseca/files_manager)  ![Packagist License](https://img.shields.io/packagist/l/fboseca/files_manager) [![Laravel](https://img.shields.io/badge/Laravel-^5.8-orange.svg)](https://laravel.com/docs/5.8) ![Php](https://img.shields.io/badge/php->=7.1.3-orange.svg)  
+[![Packagist Version](https://img.shields.io/packagist/v/fboseca/files_manager)](https://packagist.org/packages/fboseca/files_manager)  ![Packagist License](https://img.shields.io/packagist/l/fboseca/files_manager) [![Laravel](https://img.shields.io/badge/Laravel-^6-orange.svg)](https://laravel.com/docs/5.8) ![Php](https://img.shields.io/badge/php->=7.1.3-orange.svg)  
 
 # What It Does      
  This package allows you to keep track of the uploaded files, for this it associates each file to a Laravel model, getting a quick and easy manage.  
@@ -42,14 +42,20 @@ And show the image files in the views:
 - [Usage](#usage)
   - [Adding a file](#adding-a-file)      
   - [Get files](#get-files)   
+  - [Method append and prepend](#method-append-and-prepend)   
   - [Delete](#delete)   
   - [Download](#download)   
+    - [Get download´s route](#get-downloads-route)   
   - [Copy](#copy)  
   - [Move](#move)  
-  - [Files to zip](#files-to-zip)      
   - [Save and get Logo](#save-and-get-logo)         
   - [Get source from Images](#get-source-from-images)  
-  - [Change disk and folder](#change-disk-and-folder)      
+  - [Change disk and folder](#change-disk-and-folder) 
+- [Collections](#collections)
+  - [Delete Files](#delete-files)    
+  - [Copy Files](#copy-files)    
+  - [Move Files](#move-files)    
+  - [Files to zip](#files-to-zip)  
 - [Tips](#tips)      
   - [Method exists](#method-exists)               
   - [Scopes](#scopes)       
@@ -57,7 +63,7 @@ And show the image files in the views:
 - [Api](#api)        
   
 ## Installation    
-This requires Laravel 5.8 or highter and Php 7.1.3 or highter.    
+This requires Laravel 6 or highter and Php 7.1.3 or highter.    
     
 1) In order to install File manager, just run in terminal:     
     
@@ -383,46 +389,19 @@ If you want get only the image files you can invoke the relationships **images**
 	<a href="{{$file->src}}" target="_blank">Download {{$file->name}}</a>      
 @endforeach 
 ```  
-  By default only images is configured for get a type of file of the model, but if you want add more type of relationship see the [Create a relationship for a file type](#create-a-relationship-for-a-file-type).  
+By default only images is configured for get a type of file of the model, but if you want add more type of relationship see the [Create a relationship for a type of file](#create-a-relationship-for-a-type-of-file).  
   
-For images files FileManager provide a special attributes for get the src of image. The attribute **src** return the route for public files and the attribute **forceSrc** return the route for private an public files.      
-   
-```  
-<img src="{{$file->src}}"  width="100"/>
-<img src="{{$file->forceSrc}}"  width="100"/>
-```  
 
- - The route for public files is generated automatically by Laravel.     
- - For private local files the route by default is `private/file/`, so if    
-   you want to change this route see the documentation [Private local disk    
- ](#private-local-disk)    
- - For private files for amazon this attribute return    
-   a temporary url.     
- - For privates files from other drivers like ftp or    
-   dropbox return the url in the configuration of disk.    
-    
-> Remember that in the file `config/filesystems.php` in the options of the disks you must indicate always the url options.  
+### Method append and prepend
+
+To add new content to file use method *append* (at the end of the document ) and *prepend* (at the start of the document).
 
 ```  
-//filesystem.php 
-'private' => [           
-	....
-	'url' => config('filemanager.symbolic_link_private'),          
-	'visibility' => 'private'         
-],                                 
-
-'public' => [            
-	....
-	'url' => env('APP_URL') . '/storage',          
-	'visibility' => 'public'    
-],              
-
-'s3' => [                 
-	....
-	'url' => env('AWS_URL'),          
-	'visibility' => 'public'    
-],  
+$file1 = $user1->addFile($request->file('file'));
+$file1->append('End of document');
+$file1->prepend('Start of document');
 ```  
+
 
 ### Delete 
 
@@ -433,15 +412,7 @@ $file = $user->files()->find(1);
 $file->delete();
 ```  
 
-So, if you want delete all images from user use method `removeFiles` from collection.
-
-```  
-$user->images->removeFiles(); //remove files from bbdd and platform
-$user->images()->delete(); //only remove files from bbdd
-```  
-
-> If you use mass delete of Eloquent only files will be deleted from database.
-
+So, if you want delete all images from user see [Delete Files](#delete-files).
 
 ### Download 
 
@@ -452,7 +423,9 @@ To download a file use the method **download**. This method accept a one paramet
 return $file->download();     
 return $file->download('name-of-file');  
 ```  
-For download file in html FileManager provide an attribute and route for download the file. By default the route is `download/file/{has}`, and FileManager puts it into configuration automatically.  For public files we use the attribute *downloadSrc*, but if we want to download public and private files we will use *forceDownloadSrc* 
+
+#### Get download´s route
+For download file in html, FileManager provide an attribute and route for download the file. By default the route is `download/file/{has}`, and FileManager puts it into configuration automatically.  For public files we use the attribute *downloadSrc*, but if we want to download public and private files we will use *forceDownloadSrc* 
 
 ```  
 //in your view
@@ -528,39 +501,6 @@ $file2 = $file->copyToModel($user2,[
 
 >This method return the file copied.
 
-#### Copy many files
-To copy many files use method `copyFiles` or `copyFilesToModel`. 
-This method can only be used in collections of FilesManager.
-All files will be copied with the same information as the original file. 
-To change any parameter use the option´s array.
-If the file to be copied already exists on the indicated disk and folder, 
-the name will be changed to avoid overwriting.
-
-``` 
-$file = $user->files()->find(1);  
-$filesCopied = $user->files->copyFiles();  //copy all files to the same folder and disk
-//all files will be copied with this options.
-$filesCopied = $user->files->copyFiles([
-      "folder"      => 'fileCopied', 
-      "disk"        => 'private', 
-      "name"        => 'avatar', 
-      "group"       => 'gallery', 
-      "description" => 'A description of file', 
-]);  
-
-//copy files from user1 to user2
-$filesCopied = $user->files->copyFilesToModel($user2);
-$filesCopied = $user->files->copyFilesToModel( $user2, [
-      "folder"      => 'fileCopied', 
-      "disk"        => 'private', 
-      "name"        => 'avatar', 
-      "group"       => 'gallery', 
-      "description" => 'A description of file', 
-]); 
-```  
-
->Both methods return a collection with the files copied
-
 ### Move 
   
 The method **move** will move this file to other folder.     
@@ -602,10 +542,181 @@ $file2 = $file->moveToModel($user2,[
  ]); 
  ```  
   
->This method return the file moved.  
+>This method return the file moved.   
+  
+### Save and get Logo  
 
-#### Move many files  
+FileManager provide a method for save a logo of each model. This is a special method and only accept one image, so if we pass a image to save as a logo, the last image will be deleted.   
+To save a image like a logo we use the method **setLogo**.     
+  
+```  
+$user->setLogo($request->file('file')); 
+```  
 
+|Parameter| Description | Default |    
+|--|--|--|    
+| file | The file uploaded |    
+| name | The name of file without extension. (*optional*)|random string    
+| description |  A description for a file (*optional*)|void     
+    
+For get a instance of logo use the attribute **logo**, that return a FileManager model.    
+
+```  
+<img src="{{$user->logo->src}}"  width="100"/>
+```  
+
+### Get source from Images
+
+For images files FileManager provide a special attributes for get the src of image. The attribute **src** return the route for public files and the attribute **forceSrc** return the route for private an public files.      
+   
+```  
+<img src="{{$file->src}}"  width="100"/>
+<img src="{{$file->forceSrc}}"  width="100"/>
+```  
+
+ - The route for public files is generated automatically by Laravel.     
+ - For private local files the route by default is `private/file/`, so if    
+   you want to change this route see the documentation [Private local disk    
+ ](#private-local-disk)    
+ - For private files for amazon this attribute return    
+   a temporary url.     
+ - For privates files from other drivers like ftp or    
+   dropbox return the url in the configuration of disk.    
+    
+> Remember that in the file `config/filesystems.php` in the options of the disks you must indicate always the url options.  
+
+```  
+//filesystem.php 
+'private' => [           
+	....
+	'url' => config('filemanager.symbolic_link_private'),          
+	'visibility' => 'private'         
+],                                 
+
+'public' => [            
+	....
+	'url' => env('APP_URL') . '/storage',          
+	'visibility' => 'public'    
+],              
+
+'s3' => [                 
+	....
+	'url' => env('AWS_URL'),          
+	'visibility' => 'public'    
+],  
+```  
+
+### Change disk and folder    
+#### Globally
+ The disk and folder by default are configured in `config/filemanager.php` and affect to all models by default.    
+
+```  
+"folder_default" => "files",    
+"disk_default" => "public",  
+```  
+If you want change a folder o a disk for a specific model you can do it overwriting the method **fileCustomVariables** into the model.      
+    
+```  
+class User extends Authenticatable {        
+	use Notifiable, HasFiles;    
+
+	public function fileCustomVariables() {      
+		$this->FILE_FOLDER_DEFAULT = "/users/$this->id/documents";      
+		$this->FILE_DISK_DEFAULT = 's3';      
+	}    
+}  
+```  
+In this case when a file is attached to a User model it will be saved in the disk *s3* in the folder */user/id-of-user/documents*. 
+This will happen with all files attached to model.     
+
+
+#### For this session
+If we want change the disk or folder only once, we can use the method *folder* and *disk*.      
+When we use the method disk and folder, all files attached after will be saved in the folder and disk specified.
+```  
+//disk and folder default from filemanager.php or Model class 
+$user->addFile($request->file('file')); //saved in disk and folder default          
+
+//now we change the disk and folder    
+$user->disk('s3')->folder("/users/$user->id/documents")->addFile( $request->file('file'));
+$user->addFile( $request->file('otherFile')); //saved in disk s3 and folder user/1/documents
+$user->addFile( $request->file('newFile')); //saved in disk s3 and folder user/1/documents
+ 
+```  
+
+#### Once
+Also, we can change the disk and folder only for a one file using the options.
+
+```  
+//change the disk and folder for user
+$user->disk('s3')->folder("/users/$user->id/documents");
+
+$user->addFile( $request->file('otherFile')); //saved in disk s3 and folder user/1/documents
+
+$user->addFile( $request->file('otherFile'),[
+    "folder" => 'copies',
+    "disk"   => "private"
+]); //saved in disk private and folder copies
+
+$user->addFile( $request->file('otherFile')); //saved in disk s3 and folder user/1/documents
+```  
+
+#### Get folder and disk
+If you want to know what is the actual disk and folder only call this methods:      
+  
+```  
+$user->getFolder(); //files    
+$user->getDisk(); //public   
+$user->disk('s3')->folder("/users/$user->id/documents");   
+$user->getFolder(); // users/1/documents   
+$user->getDisk(); // s3  
+```  
+
+## Collections
+  ### Delete Files 
+  To delete all images from user use method `removeFiles` from collection.
+  
+  ```  
+  $user->images->removeFiles(); //remove files from bbdd and platform
+  $user->images()->delete(); //only remove files from bbdd
+  ```  
+  
+  > If you use mass delete of Eloquent only files will be deleted from database.
+
+  ### Copy Files   
+  To copy many files use method `copyFiles` or `copyFilesToModel`. 
+  This method can only be used in collections of FilesManager.
+  All files will be copied with the same information as the original file. 
+  To change any parameter use the option´s array.
+  If the file to be copied already exists on the indicated disk and folder, 
+  the name will be changed to avoid overwriting.
+  
+  ``` 
+  $file = $user->files()->find(1);  
+  $filesCopied = $user->files->copyFiles();  //copy all files to the same folder and disk
+  //all files will be copied with this options.
+  $filesCopied = $user->files->copyFiles([
+        "folder"      => 'fileCopied', 
+        "disk"        => 'private', 
+        "name"        => 'avatar', 
+        "group"       => 'gallery', 
+        "description" => 'A description of file', 
+  ]);  
+  
+  //copy files from user1 to user2
+  $filesCopied = $user->files->copyFilesToModel($user2);
+  $filesCopied = $user->files->copyFilesToModel( $user2, [
+        "folder"      => 'fileCopied', 
+        "disk"        => 'private', 
+        "name"        => 'avatar', 
+        "group"       => 'gallery', 
+        "description" => 'A description of file', 
+  ]); 
+  ```  
+  
+  >Both methods return a collection with the files copied
+  ### Move Files   
+  
 To move many files use method `moveFiles` or `moveFilesToModel`. This method can only be used in collections of FilesManager. The method `moveFiles` needs a folder as first parameter.  
   
 ``` 
@@ -674,7 +785,12 @@ $user2 = User::find(2);
 $ImagesUser2 = $user2->images;//get images user2      
 
 $zip->addFiles($ImagesUser2); //merge images user1 with images user2
+
+//adding a new file
+$newFile = $user1->addFile($file);
+$zip->addFile($newFile);
 ```  
+
 Now we have in the zip file the images of User1 and User2 and if we use the method save this zip file will be associated with User1 because it is the one that created the zip. To change the user to which we want to associate the created zip file we will use the method **model**.      
 
 ```  
@@ -686,7 +802,7 @@ $zip->disk('s3')->folder("path/to/folder")->model($user2)->save();
 ```  
 Keep in mind that when the model changes, the file will be saved in its default folder and disk, but if we modify before the folder or disk where we want to save it, then folder and disk specified will prevail over the default route.  
 
-#### Download  
+#### Download Zip
   
 For download the zip file we can use the method **download**. This method accept two parameters:    
 
@@ -696,98 +812,13 @@ For download the zip file we can use the method **download**. This method accept
 | deleteFile| For delete the temporal file after download. This is useful to prevent the system memory from becoming saturated  (*optional*)| true      
 
 ``` 
-return $zip->download('myImages');//this will delete the file    
-return $zip->download('myImages',false);//this will not delete the file  
+return $zip->download('myImages');//this will delete the temporary file    
+return $zip->download('myImages',false);//this will not delete the temporary file  
 ```  
 
 > If the zip file is not deleted after downloading, it will remain on  
 > the temporary disk taking up space.  
-  
-### Save and get Logo  
 
-FileManager provide a method for save a logo of each model. This is a special method and only accept one image, so if we pass a image to save as a logo, the last image will be deleted.   
-To save a image like a logo we use the method **setLogo**.     
-  
-```  
-$user->setLogo($request->file('file')); 
-```  
-
-|Parameter| Description | Default |    
-|--|--|--|    
-| file | The file uploaded |    
-| name | The name of file without extension. (*optional*)|random string    
-| description |  A description for a file (*optional*)|void     
-    
-For get a instance of logo use the attribute **logo**, that return a FileManager model.    
-
-```  
-<img src="{{$user->logo->src}}"  width="100"/>
-```  
-
-### Change disk and folder    
-
- The disk and folder by default are configured in `config/filemanager.php` and affect to all models by default.    
-
-```  
-"folder_default" => "files",    
-"disk_default" => "public",  
-```  
-If you want change a folder o a disk for a specific model you can do it overwriting the method **fileCustomVariables** into the model.      
-    
-```  
-class User extends Authenticatable {        
-	use Notifiable, HasFiles;    
-
-	public function fileCustomVariables() {      
-		$this->FILE_FOLDER_DEFAULT = "/users/$this->id/documents";      
-		$this->FILE_DISK_DEFAULT = 's3';      
-	}    
-}  
-```  
-
-In this case when a file is attached to a User model it will be saved in the disk *s3* in the folder */user/id-of-user/documents*. This will happen with all files attached to model.     
-    
-If we want change the disk or folder only once, we can use the method *folder* and *disk*:      
-
-```  
-//disk and folder default from filemanager.php or Model class 
-$user->addFile($request->file('file')); //saved in disk and folder default          
-
-//now we change the disk and folder    
-$user->disk('s3')->folder("/users/$user->id/documents")->addFile( $request->file('file'));
-$user->addFile( $request->file('otherFile')); //saved in disk s3 and folder user/1/documents
- 
-```  
-
-When we use the method disk and folder, all files attached after will be saved in the folder an disk specified.  
-  
-If you want to know what is the actual disk and folder only call this methods:      
-  
-```  
-$user->getFolder(); //files    
-$user->getDisk(); //public   
-$user->disk('s3')->folder("/users/$user->id/documents");   
-$user->getFolder(); // users/1/documents   
-$user->getDisk(); // s3  
-```  
-
-Also, we can change the disk and folder only for a one file using the options.
-
-```  
-//change the disk and folder for user
-$user->disk('s3')->folder("/users/$user->id/documents");
-
-$user->addFile( $request->file('otherFile')); //saved in disk s3 and folder user/1/documents
-
-$user->addFile( $request->file('otherFile'),[
-    "folder" => 'copies',
-    "disk"   => "private"
-]); //saved in disk private and folder copies
-
-$user->addFile( $request->file('otherFile')); //saved in disk s3 and folder user/1/documents
-```  
-
-  
 ## Tips  
   
 ### Method exists   

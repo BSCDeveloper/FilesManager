@@ -27,6 +27,9 @@ class ZipFilesTest extends TestCase {
 		$this->user2->addFile($file);
 	}
 
+	/**
+	 * @group zip
+	 */
 	public function testFilesToZip() {
 		$this->initUser1();
 		$this->assertSame(3, $this->user1->files()->count());
@@ -58,6 +61,9 @@ class ZipFilesTest extends TestCase {
 		$this->assertGreaterThan($fileZip2->size, $fileZip->size);
 	}
 
+	/**
+	 * @group zip
+	 */
 	public function testFileChangeFolderDiskModel() {
 		$this->initUser1();
 		$this->initUser2();
@@ -79,13 +85,21 @@ class ZipFilesTest extends TestCase {
 		$this->assertSame('myimages.zip', $fileZip->name);
 		$this->assertSame('Desc', $fileZip->description);
 		$this->assertSame('forDownloads', $fileZip->group);
+		$this->assertSame('private', $fileZip->disk);
+		$this->assertSame('new/folder', $fileZip->folder);
 		$this->assertSame(3, $this->user1->files()->count());
 		$this->assertSame(5, $this->user2->files()->count());
 	}
 
-	public function testFilesFromTwoUserToZip() {
+	/**
+	 * @group zip
+	 */
+	public function testDownloadZip() {
+		$this->initUser1();
+		$zip = $this->user1->files->toZipFile();
+		$response = $zip->download('test');
 
+		$this->assertStringContainsString('filename=test.zip', $response);
+		$this->assertStringContainsString('200 OK', $response);
 	}
-
-
 }
