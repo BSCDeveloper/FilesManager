@@ -293,31 +293,30 @@ Now the model *User* can attach files to self.
 
 ### Adding a file 
 
-Any file that you add, ***never going to be overwrite***, it is a security system to prevent files from being replaced. Each file will be attached with a single model that imlements the *HasFiles* Trait. For attach a file to a model use the method **addFile** passing the file that you want to save.
-  
+To save a file into a model use the method **addFile** passing the file that you want to save.
+This method accept a file as first parameter and options`s array as second parameter and 
+return a FileManager class.  
+
 ```  
 $user = User::find(1);    
 $newFile = $user->addFile($request->file('file'));  
-```  
+``` 
 
-Automatically FileManager create a unique random name and save the file into the database and in the platform and folder indicated in the disk configuration. If we have not indicated any disk or folder to our model, it will take the default configuration of the file `config/filemanager.php`.
+Any file that you add, ***never going to be overwrite***, it is a security system to prevent files from being replaced.
+Automatically FileManager create a unique random name and save the file into the database and the disk 
+and folder indicated in the configuration. 
+It will take the default configuration of the file `config/filemanager.php`.
     
 ```  
 "folder_default" => "files",    
 "disk_default" => "public",  
 ```
   
-In case that the name exists in the disk and folder, FileManager   
-automatically change de name to `name_(1).extension` to make sure the file will not be overwritten.
-This method accept a file as first parameter and array options as second parameter.    
+#### Change a name
   
-|Parameter|   |      
-|--|--|  
-| file | The file uploaded |      
-| options (array) | For indicate *group*, *name*, *description*, *disk* and *folder*  of file
-    
-**return** a FileManager class with the file saved.
-    
+**In case that the name exists** in the disk and folder, FileManager   
+automatically change de name to `name_(1).extension` to make sure the file will not be overwritten.  
+ 
 ```  
 $newFile = $user->addFile($request->file('file'),[
     "group"       => "gallery",
@@ -328,15 +327,16 @@ $newFile = $user->addFile($request->file('file'),[
 ]);
 ```  
 
-Note that it is not necessary to indicate the file extension because FileManager will apply the correct extension to the file and it will check the file type according to the configuration.
-
-For security reasons, the name of file will be modified if contains spaces or dots.
-For example, if the name is "my Name File.d.doc" will be changed for `my_name_file.doc`. 
- 
->  only will be valid the text until the first point 
-and the spaces will be changed for `_`. 
+> Note that it is not necessary to indicate the file extension because FileManager will apply the correct 
+> extension to the file, and it will check the file type according to the configuration.
 
 The extension will be applied automatically, see [File extensions](#file-extensions) document.
+
+For security reasons, **the name of file will be modified if contains spaces or dots**.
+For example, if the name is *my Name File.d.doc* will be changed for `my_name_file.doc`. 
+ 
+>  only will be valid the text until the first dot 
+and the spaces will be changed for `'_'`.
 
 #### Add files from path
 We can add files from path resource.
@@ -362,8 +362,8 @@ Too as optional parameters it has the same as
 the `addFile` method: *group, name and description*
 
 ```  
-$newFile = $user->addFileWithContent('hello worl', 'txt');
-$newFile = $user->addFileWithContent('hello worl', 'txt', [
+$newFile = $user->addFileWithContent('hello world', 'txt');
+$newFile = $user->addFileWithContent('hello world', 'txt', [
     "group"       => "gallery",
     "name"        => "myNameFile",
     "description" => "A description for a file",
