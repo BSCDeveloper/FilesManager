@@ -22,7 +22,7 @@ trait HasFiles {
 	private $DISK = ''; //disk to save files
 	private $ENVIRONMENT = ''; //true is public environment and false is private
 	private $customVariablesStarted = false; //for initialize variables only once
-	private $GROUP_LOGO = 'logo';
+	private $GROUP_AVATAR = 'avatar';
 
 	/*
 	|--------------------------------------------------------------------------
@@ -87,16 +87,16 @@ trait HasFiles {
 	}
 
 	/**
-	 * Attach a file and save it like logo of model. Delete logo before if exists
+	 * Save avatar of model. Delete avatar before if exists
 	 * @param UploadedFile $file
 	 * @param array        $options
 	 * @return FileManager|UploadedFile
 	 */
-	public function setLogo(UploadedFile $file, $options = []) {
-		if ($this->logo) {
-			$this->logo->delete();
+	public function setAvatar(UploadedFile $file, $options = []) {
+		if ($this->avatar) {
+			$this->avatar->delete();
 		}
-		$options["group"] = $this->GROUP_LOGO;
+		$options["group"] = $this->GROUP_AVATAR;
 		return $this->addFile($file, $options);
 	}
 
@@ -221,7 +221,7 @@ trait HasFiles {
 	 * To get logo of model
 	 * @return mixed
 	 */
-	public function getLogoAttribute() {
-		return $this->files()->withGroup($this->GROUP_LOGO)->first();
+	public function getAvatarAttribute() {
+		return $this->files()->withGroup($this->GROUP_AVATAR)->first();
 	}
 }

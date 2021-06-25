@@ -48,7 +48,7 @@ And show the image files in the views:
     - [Get download´s route](#get-downloads-route)   
   - [Copy](#copy)  
   - [Move](#move)  
-  - [Save and get Logo](#save-and-get-logo)         
+  - [Save and get avatar](#save-and-get-avatar)         
   - [Get source from Images](#get-source-from-images)  
   - [Change disk and folder](#change-disk-and-folder) 
 - [Collections](#collections)
@@ -314,8 +314,8 @@ It will take the default configuration of the file `config/filemanager.php`.
   
 #### Change a name
   
-**In case that the name exists** in the disk and folder, FileManager   
-automatically change de name to `name_(1).extension` to make sure the file will not be overwritten.  
+**In case that the name exists** in the disk and folder, FileManager automatically change de 
+name to `name_(1).extension` to make sure the file will not be overwritten.  
  
 ```  
 $newFile = $user->addFile($request->file('file'),[
@@ -386,7 +386,7 @@ If you want get only the image files you can invoke the relationships **images**
 @endforeach 
 
 @foreach ($user->files as $file )        
-	<a href="{{$file->src}}" target="_blank">Download {{$file->name}}</a>      
+	<a href="{{$file->src}}" target="_blank">{{$file->name}}</a>      
 @endforeach 
 ```  
 By default only images is configured for get a type of file of the model, but if you want add more type of relationship see the [Create a relationship for a type of file](#create-a-relationship-for-a-type-of-file).  
@@ -425,14 +425,17 @@ return $file->download('name-of-file');
 ```  
 
 #### Get download´s route
-For download file in html, FileManager provide an attribute and route for download the file. By default the route is `download/file/{has}`, and FileManager puts it into configuration automatically.  For public files we use the attribute *downloadSrc*, but if we want to download public and private files we will use *forceDownloadSrc* 
+For download file in html, FileManager provide an attribute and route for download the file.  
+For public files we use the attribute *downloadSrc*, but if we want to download public and private files we 
+will use *forceDownloadSrc* 
 
 ```  
 //in your view
 <a href="{{$file->downloadSrc}}">download</a>  //only for public files    
 <a href="{{$file->forceDownloadSrc}}">download</a> //for all public and privates files
 ```  
-  **If we want to change the default download path**, we must add this code in our Laravel route file:      
+By default the route is `download/file/{has}`, and FileManager puts it into configuration automatically. 
+**If we want to change the default download path**, we must add this code in our Laravel route file:      
 
 ```  
 Route::get('you/route/{has}', function ($has) {        
@@ -440,7 +443,7 @@ Route::get('you/route/{has}', function ($has) {
 })->name('{yourNameOfRoute}'); 
 ```  
 
-You can modify the name and path of the route. After this, we must change the config. In file `config/filemanager.php` in *symbolic_link_download_files* change the default value by the name of you route.    
+After this, **we must change the config**. In file `config/filemanager.php` in *symbolic_link_download_files* change the default value by the name of you route.    
     
 ```  
 "symbolic_link_download_files" => "youNameOfRoute"
@@ -461,15 +464,12 @@ Route::get('myNameOfPathDownloadFiles/{has}', function ($has) {
 ### Copy 
 
 The method **copy** will make a copy of the same file with same name. It will be saved in the same folder and disk as the original file. 
-This method accepts array options as parameter.    
-
-|Parameter|  |    
-|--|--|    
-| options (optional) | Change folder, disk, model, group, name and description        
+This method accepts options`s array as parameter.    
 
 ``` 
 $file = $user->files()->find(1);  
 $file2 = $file->copy();  //copy exactly the flie 
+//copy a file in distinct folder, disk, with distinct name, group and description
 $file2 = $file->copy([
     "folder"      => 'fileCopied', //change folder
     "disk"        => 'private', //change disk
@@ -503,14 +503,9 @@ $file2 = $file->copyToModel($user2,[
 
 ### Move 
   
-The method **move** will move this file to other folder.     
-This method need the folder as first parameter and accepts options`s array as second parameter.
+The method **move** will move this file to other folder. This method need the folder as first parameter 
+and accepts options`s array as second parameter.
 
-|Parameter|  |      
-|--|--|      
-| folder | The folder where the file will be moved          
-| options (optional) | Change disk, model, group, name and description          
-  
 ``` 
 $file = $user->files()->find(1); 
 $file2 = $file->move("other_folder");  //move the file to **other_folder folder**
@@ -526,9 +521,9 @@ If the file exists in the folder and disk specified, FileManager will change the
   
 #### Move to model  
  
- We can move a file into a other model that implement the *HasFile* trait.  
-For this, use the method **moveToModel** passing the model where you want move the file   
-as a first parameter and array options as second parameter.  
+We can move a file into a other model that implement the *HasFile* trait. For this, use the 
+method **moveToModel** passing the model where you want move the file as a first parameter and 
+options`s array  as second parameter.  
   
 ``` 
 $file = $user->files()->find(1); 
@@ -544,30 +539,34 @@ $file2 = $file->moveToModel($user2,[
   
 >This method return the file moved.   
   
-### Save and get Logo  
+### Save and get avatar  
 
-FileManager provide a method for save a logo of each model. This is a special method and only accept one image, so if we pass a image to save as a logo, the last image will be deleted.   
-To save a image like a logo we use the method **setLogo**.     
+FileManager provide a method for save a avatar of each model. This is a special method and only accept one image, 
+so if we pass a image to save as a avatar, the last image will be deleted.   
+For this use the method **setAvatar** and accepts options`s array as second parameter.       
   
 ```  
-$user->setLogo($request->file('file')); 
+$user->setAvatar($request->file('file')); 
+$fileSaved = $user->setAvatar($file, [
+    "name"   => "logo2",
+    "folder" => "avatars",
+    "disk"   => "s3",
+	"description" => "A description for a file"
+]);
 ```  
 
-|Parameter| Description | Default |    
-|--|--|--|    
-| file | The file uploaded |    
-| name | The name of file without extension. (*optional*)|random string    
-| description |  A description for a file (*optional*)|void     
-    
-For get a instance of logo use the attribute **logo**, that return a FileManager model.    
+For get a instance of avatar use the attribute **avatar**, that return a FileManager model.    
 
 ```  
-<img src="{{$user->logo->src}}"  width="100"/>
+<img src="{{$user->avatar->src}}"  width="100"/>
 ```  
+
+>Be careful, the avatar should not be saved to a disk with private visibility
 
 ### Get source from Images
 
-For images files FileManager provide a special attributes for get the src of image. The attribute **src** return the route for public files and the attribute **forceSrc** return the route for private an public files.      
+For images files FileManager provide a special attributes for get the src of image. The attribute **src** return 
+the route for public files and the attribute **forceSrc** returns the path for any kind of file visibility.    
    
 ```  
 <img src="{{$file->src}}"  width="100"/>
@@ -614,7 +613,7 @@ For images files FileManager provide a special attributes for get the src of ima
 "folder_default" => "files",    
 "disk_default" => "public",  
 ```  
-If you want change a folder o a disk for a specific model you can do it overwriting the method **fileCustomVariables** into the model.      
+If you want change a folder or a disk for a specific model you can do it overwriting the method **fileCustomVariables** into the model.      
     
 ```  
 class User extends Authenticatable {        
@@ -626,26 +625,27 @@ class User extends Authenticatable {
 	}    
 }  
 ```  
-In this case when a file is attached to a User model it will be saved in the disk *s3* in the folder */user/id-of-user/documents*. 
-This will happen with all files attached to model.     
+In this case when a file is attached to a User model it will be saved in the disk *s3* and the folder */user/id-of-user/documents*. 
+This will happen with all files attached to User model.     
 
 
 #### For this session
-If we want change the disk or folder only once, we can use the method *folder* and *disk*.      
-When we use the method disk and folder, all files attached after will be saved in the folder and disk specified.
+If we want change the disk or folder only for this session, we can use the method *folder* and *disk*,
+then all files attached after this, will be saved in the new folder and disk specified.
+
 ```  
 //disk and folder default from filemanager.php or Model class 
 $user->addFile($request->file('file')); //saved in disk and folder default          
 
 //now we change the disk and folder    
-$user->disk('s3')->folder("/users/$user->id/documents")->addFile( $request->file('file'));
+$user->disk('s3')->folder("/users/$user->id/documents");
 $user->addFile( $request->file('otherFile')); //saved in disk s3 and folder user/1/documents
 $user->addFile( $request->file('newFile')); //saved in disk s3 and folder user/1/documents
  
 ```  
 
 #### Once
-Also, we can change the disk and folder only for a one file using the options.
+Also, we can change the disk and folder only for a one file.
 
 ```  
 //change the disk and folder for user

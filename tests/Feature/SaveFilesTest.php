@@ -97,14 +97,29 @@ class SaveFilesTest extends TestCase {
 	/**
 	 * @group save
 	 */
-	public function testSaveLogo() {
+	public function testSaveAvatar() {
 		//save logo
 		$file = UploadedFile::fake()->image('avatar.png', 100);
-		$this->user1->setLogo($file, [
-			"name" => "logo2",
-		]);
-		$response = $this->get($this->user1->logo->src);
+
+		$fileSaved = $this->user1->setAvatar($file);
+		Storage::disk($fileSaved->disk)->assertExists($fileSaved->url);
+		$this->assertSame('avatar', $fileSaved->group);
+		$this->assertSame(1, $this->user1->files()->count());
+		$response = $this->get($this->user1->avatar->src);
 		$response->assertStatus(200);
+
+		$fileSaved = $this->user1->setAvatar($file, [
+			"name"   => "logo2",
+			"disk"   => "private",
+			"folder" => "avatars",
+		]);
+		Storage::disk($fileSaved->disk)->assertExists($fileSaved->url);
+		$this->assertSame('avatar', $fileSaved->group);
+		$this->assertSame('logo2.png', $fileSaved->name);
+		$this->assertSame('private', $fileSaved->disk);
+		$this->assertSame('avatars', $fileSaved->folder);
+		$this->assertSame(1, $this->user1->files()->count());
+
 	}
 
 	/**
