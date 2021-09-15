@@ -1,5 +1,5 @@
 
-[![Packagist Version](https://img.shields.io/packagist/v/fboseca/files_manager)](https://packagist.org/packages/fboseca/files_manager)  ![Packagist License](https://img.shields.io/packagist/l/fboseca/files_manager) [![Laravel](https://img.shields.io/badge/Laravel-^6-orange.svg)](https://laravel.com/docs/5.8) ![Php](https://img.shields.io/badge/php->=7.1.3-orange.svg)  
+[![Packagist Version](https://img.shields.io/packagist/v/fboseca/files_manager)](https://packagist.org/packages/fboseca/files_manager)  ![Packagist License](https://img.shields.io/packagist/l/fboseca/files_manager) [![Laravel](https://img.shields.io/badge/Laravel->=6-orange.svg)](https://laravel.com/docs/6.x) ![Php](https://img.shields.io/badge/php->=7.1.3-orange.svg)  
 
 # What It Does      
  This package allows you to keep track of the uploaded files, for this it associates each file to a Laravel model, getting a quick and easy manage.  
