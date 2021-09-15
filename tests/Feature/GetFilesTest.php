@@ -65,6 +65,17 @@ class GetFilesTest extends TestCase {
 			"name" => "name"
 		]);
 		$this->assertTrue($this->user1->existsFile('name.pdf'));
+
+		$this->user1->disk('private')->folder("/users/1/documents");
+		$file1 = $this->user1->addFile($file, [
+			"name" => "name2"
+		]);
+
+		$this->assertSame('private', $file1->disk);
+		$this->assertSame('/users/1/documents', $file1->folder);
+		$this->assertSame('name2.pdf', $file1->name);
+
+		$this->assertTrue($this->user1->existsFile('name2.pdf'));
 	}
 
 	/**

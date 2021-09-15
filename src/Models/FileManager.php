@@ -47,6 +47,7 @@ class FileManager extends Model {
 	|--------------------------------------------------------------------------
 	|
 	*/
+
 	/**
 	 * Copy this file
 	 * @param array $options
@@ -197,13 +198,18 @@ class FileManager extends Model {
 	|--------------------------------------------------------------------------
 	|
 	*/
-
+	/**
+	 * @return string url to get route of public file
+	 */
 	public function getSrcAttribute() {
 		if ($this->public) {
 			return Storage::disk($this->disk)->url($this->url);
 		}
 	}
 
+	/**
+	 * @return string url to get route of file
+	 */
 	public function getForceSrcAttribute() {
 		if ($this->public) {
 			return $this->src;
@@ -223,6 +229,9 @@ class FileManager extends Model {
 		}
 	}
 
+	/**
+	 * @return string url for download public file
+	 */
 	public function getDownloadSrcAttribute() {
 		if ($this->public) {
 			return $this->getForceDownloadSrcAttribute();
@@ -231,10 +240,18 @@ class FileManager extends Model {
 		}
 	}
 
+	/**
+	 * @return string url for download file
+	 */
 	public function getForceDownloadSrcAttribute() {
 		return route(config('filemanager.symbolic_link_download_files'), self::encryptId($this->id));
 	}
 
+	/**
+	 * Get the content of file
+	 * @return string
+	 * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+	 */
 	public function getGetContentAttribute() {
 		return Storage::disk($this->disk)->get($this->url);
 	}
@@ -278,16 +295,36 @@ class FileManager extends Model {
 		return \Crypt::decrypt($id);
 	}
 
+	/**
+	 * Make a name secure for save
+	 * @param string $name
+	 * @return string
+	 */
 	static public function secureName(string $name): string {
 		$n = explode('.', $name)[0];
 		$n = Str::slug($n, '_');
 		return Str::limit($n, self::LIMIT_MAX_NAME);
 	}
 
+	/**
+	 * Check if file exist in the source
+	 * @param $folder
+	 * @param $disk
+	 * @param $fullName
+	 * @return bool
+	 */
 	static public function checkIfFileExist($folder, $disk, $fullName): bool {
 		return Storage::disk($disk)->exists(Str::finish($folder, '/') . $fullName);
 	}
 
+	/**
+	 * Return a name that is not in use in the source
+	 * @param string $name
+	 * @param string $extension
+	 * @param        $folder
+	 * @param        $disk
+	 * @return string
+	 */
 	static public function getNameNotInUse(string $name, string $extension, $folder, $disk): string {
 		$newName = $name;
 		$fullName = "$newName.$extension"; //name will be saved
@@ -301,29 +338,64 @@ class FileManager extends Model {
 		return $newName; //name or name_(1)....
 	}
 
+	/**
+	 * Generate a new random name
+	 * @return string
+	 */
 	static public function generateName(): string {
 		return self::secureName(Str::random(9));
 	}
 
+	/**
+	 * @param UploadedFile $file
+	 * @return string extension of file
+	 */
 	static public function getExtensionFile(UploadedFile $file): string {
 		return $file->getClientOriginalExtension() ?: config('filemanager.extension_default');
 	}
 
+	/**
+	 * Create a temporary file on the disk temporary
+	 * @param        $nameTemp
+	 * @param string $content
+	 * @return mixed
+	 */
 	static public function createTempFile($nameTemp, $content = '') {
 		$storageTemp = Storage::disk(config('filemanager.disk_temp'));
 		$storageTemp->put($nameTemp, $content);
 		return $storageTemp->path($nameTemp);
 	}
 
+	/**
+	 * Remove the temporary file
+	 * @param $nameTemp
+	 */
 	static public function removeTempFile($nameTemp) {
 		$storageTemp = Storage::disk(config('filemanager.disk_temp'));
 		$storageTemp->delete($nameTemp);
 	}
 
+	/**
+	 * Copy the file in the platform
+	 * @param $disk
+	 * @param $folder
+	 * @param $file
+	 * @param $name
+	 * @return string
+	 */
 	static public function uploadFileOnPlatform($disk, $folder, $file, $name): string {
 		return Storage::disk($disk)->putFileAs($folder, $file, $name);
 	}
 
+	/**
+	 * Create a new file in database and upload it to the platform
+	 * @param       $file
+	 * @param       $disk
+	 * @param       $folder
+	 * @param       $environment
+	 * @param array $options
+	 * @return FileManager
+	 */
 	static public function createFile($file, $disk, $folder, $environment, $options = []) {
 		$name = !empty($options['name']) ? $options['name'] : '';
 		$description = !empty($options['description']) ? $options['description'] : '';
@@ -344,6 +416,14 @@ class FileManager extends Model {
 		return $fileManager;
 	}
 
+	/**
+	 * Prepare all data that needs to create a new file
+	 * @param UploadedFile $file
+	 * @param              $name
+	 * @param              $folder
+	 * @param              $disk
+	 * @return array
+	 */
 	static public function prepareFileData(UploadedFile $file, $name, $folder, $disk) {
 		if (!$name) {
 			$name = self::generateName();
@@ -370,6 +450,11 @@ class FileManager extends Model {
 		];
 	}
 
+	/**
+	 * Returns the file type of the configuration according to its extension
+	 * @param $extension
+	 * @return string
+	 */
 	static public function getTypeFile($extension): string {
 		if (!empty(config("filemanager.extensions.$extension"))) {
 			return config("filemanager.extensions.$extension");
@@ -378,6 +463,12 @@ class FileManager extends Model {
 		}
 	}
 
+	/**
+	 * Get data config of the disk in use
+	 * @param $disk
+	 * @param $field
+	 * @return string
+	 */
 	static public function getDataConfigDisk($disk, $field): string {
 		return config("filesystems.disks.$disk.$field", '');
 	}

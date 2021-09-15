@@ -681,7 +681,7 @@ $user->getDisk(); // s3
   $user->images()->delete(); //only remove files from bbdd
   ```  
   
-  > If you use mass delete of Eloquent only files will be deleted from database.
+  > Remember, if you use mass delete of Eloquent only files will be deleted from database.
 
   ### Copy Files   
   To copy many files use method `copyFiles` or `copyFilesToModel`. 
@@ -715,6 +715,7 @@ $user->getDisk(); // s3
   ```  
   
   >Both methods return a collection with the files copied
+ 
   ### Move Files   
   
 To move many files use method `moveFiles` or `moveFilesToModel`. This method can only be used in collections of FilesManager. The method `moveFiles` needs a folder as first parameter.  
@@ -781,6 +782,7 @@ You can add other files to the zip file. You need use the method **addFiles**, a
 $user1 = User::find(1);     
 $zip = $user1->images->toZipFile();//images user1 to zip   
 
+//adding a many files
 $user2 = User::find(2);      
 $ImagesUser2 = $user2->images;//get images user2      
 
@@ -791,7 +793,8 @@ $newFile = $user1->addFile($file);
 $zip->addFile($newFile);
 ```  
 
-Now we have in the zip file the images of User1 and User2 and if we use the method save this zip file will be associated with User1 because it is the one that created the zip. To change the user to which we want to associate the created zip file we will use the method **model**.      
+Now we have in the zip file the images of User1 and User2 and if we use the method save this zip file will be associated with User1 because it is the one that created the zip. 
+To change the user to which we want to associate the created zip file we will use the method **model**.      
 
 ```  
 $zip->model($user2)->save();//saved in the folder and disk of User2 
@@ -827,6 +830,7 @@ You can check if a file exist in the folder and disk of model with method **exis
 
 ```  
 $user->existsFile("{name-of-file-with-extension}");
+$user->disk('private')->folder("/users/1/documents")->existsFile("{name-of-file-with-extension}");
 ```  
   
 ### Scopes   
@@ -844,7 +848,8 @@ This package allow to create you own custom FileManager`s model for a kind of fi
     
  1. Creating a new class    
     
-Create a class that extends of `Fboseca\Filesmanager\FileManager`, select the type of file that you want to attach to this model and **apply the global scoped TypeFileScope.**    
+Create a class that extends of `Fboseca\Filesmanager\FileManager`, select the type of file that you 
+want to attach to this model and **apply the global scoped TypeFileScope.**    
 
 ```  
 use Fboseca\Filesmanager\Models\FileManager; 
@@ -860,7 +865,8 @@ class Docs extends FileManager {
 } 
 ```  
 
-In this case the class *Doc* is for files that we consider word type. Remember that the type of the files is configured in `config/filemanager.php`, see [File extensions](#file-extensions).    
+In this case the class *Doc* is for files that we consider word type. 
+Remember that the type of the files is configured in `config/filemanager.php`, see [File extensions](#file-extensions).    
 
 ```    
  "extensions" => [      
@@ -870,11 +876,12 @@ In this case the class *Doc* is for files that we consider word type. Remember t
 	 ......    
 ```  
 
-In this example, all files with extension doc or docx are considered word types.  
+In this example, all files with extension *doc* or *docx* are considered word type.  
    
  2. Usage    
     
-When we have already created the model we can use it in our main model to associate and manage files. We must add the relationship to principal model ( in this case we use User model ).    
+When we have already created the model we can use it in our main model to associate and manage files. 
+We must add the relationship to principal model ( in this case we use User model ).    
 
 ``` 
 class User extends Authenticatable {    
